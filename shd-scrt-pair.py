@@ -163,6 +163,7 @@ def main():
   amountSwapping = 40 #sscrt
   lastHeight = 0
   gasFeeScrt = .050001 + .00027
+  print("Starting main loop")
   while keepLooping:
     try:
       lastHeight = sync_next_block(client, lastHeight)
