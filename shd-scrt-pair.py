@@ -155,14 +155,14 @@ def swapSswap(sscrtBal, firstSwap, secondSwap):
   encryptedMsgSienna = str( base64.b64encode(msgSienna.encode("utf-8")), "utf-8")
   handleMsgSienna = { "send": {"recipient": SIENNA_SSCRT_SHD_PAIR, "amount": firstSwapStr, "msg": encryptedMsgSienna }}
   handleMsgSiennaStr = json.dumps(handleMsgSienna, separators=(",", ":"))
-  msgExecuteSswap = encryptHandleMsg(SSCRT_ADDRESS, handleMsgSiennaStr, SSCRT_CONTRACT_HASH, True)
+  msgExecuteSienna = encryptHandleMsg(SSCRT_ADDRESS, handleMsgSiennaStr, SSCRT_CONTRACT_HASH, True)
 
   #res = wallet.execute_tx(SSCRT_ADDRESS, handleMsgSswap) #OTHER METHOD
 
   #msgExecuteSienna = client.wasm.contract_execute_msg(mk.acc_address, SHD_ADDRESS, handleMsgSienna, [])
   #tx = wallet.create_and_sign_tx([msgExecuteSswap, msgExecuteSienna], fee) #OTHER METHOD
 
-  return encryptAndBroadcastTx(msgExecuteSswap, msgExecuteSswap)
+  return encryptAndBroadcastTx(msgExecuteSswap, msgExecuteSienna)
 
 def buyScrt(scrtBal):
   sscrtBalRes = client.wasm.contract_query(SSCRT_ADDRESS, { "balance": { "address": mk.acc_address, "key": SSCRT_KEY }})
@@ -274,7 +274,7 @@ def main():
   print( runningProfit )
   txLog.close()
 
-main()
+#main()
 
 def testFunction():
   #txLog = open("tx_log.csv", "a")
@@ -293,11 +293,11 @@ def testFunction():
     profit, firstSwap, secondSwap = calculateProfitCP(siennaShd, siennaSscrt, sswapShd, sswapSscrt, amountSwapping, gasFeeScrt)
     print("profit: ", profit, firstSwap, secondSwap)
   res = swapSswap(amountSwapping, firstSwap, secondSwap)
-  res = buyScrt(amountSwapping)
+  #res = buyScrt(amountSwapping)
   print(res.to_json())
 
 
-#testFunction()
+testFunction()
 
 
 
