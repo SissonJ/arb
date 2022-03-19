@@ -2,7 +2,7 @@ import asyncio
 import base64
 import json
 from miscreant.aes.siv import SIV
-from secret_sdk.client.lcd import LCDClient
+from arb import LCDClient
 from cryptography.hazmat.primitives import serialization
 from typing import Optional
 
