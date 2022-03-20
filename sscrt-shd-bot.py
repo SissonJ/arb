@@ -198,22 +198,22 @@ def generateTxEncryptionKeys(client: LCDClient):
   txEncryptionKeyDict = {"first":client.utils.get_tx_encryption_key(nonceDict["first"]), "second":client.utils.get_tx_encryption_key(nonceDict["second"])}
   return nonceDict, txEncryptionKeyDict
 
-def txHandle(txResponse, profit, logWriter, runningProfit):
+def txHandle(txResponse, profit, logWriter, runningProfit, lastHeight):
   if(not txResponse):
     print( "ERROR" )
     return False
   
   if(txResponse.is_tx_error()):
-    logWriter.writerow([txResponse.to_json()])
+    #logWriter.writerow([txResponse.to_json()])
     print(txResponse.to_json())
     logWriter.writerow([datetime.now(), "Error", txResponse.txhash])
     print(txResponse.txhash)
     return False
 
   print(txResponse.txhash)
-  logWriter.writerow([txResponse.to_json()])
+  #logWriter.writerow([txResponse.to_json()])
   print(txResponse.to_json())
-  logWriter.writerow([datetime.now(), "profit", str(profit), "runningTotal", str(runningProfit)])
+  logWriter.writerow([datetime.now(), "profit", str(profit), "runningTotal", str(runningProfit), txResponse.txhash, "height", lastHeight])
 
   return True
 
@@ -291,7 +291,7 @@ def main():
       if( txResponse != ""):
         runningProfit += profit
         print( runningProfit )
-        txHandle(txResponse, profit, logWriter, runningProfit)
+        txHandle(txResponse, profit, logWriter, runningProfit, lastHeight)
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(client)
         sequence = str(int(sequence) + 1)
     except:
