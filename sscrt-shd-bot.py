@@ -237,12 +237,14 @@ def main():
   txResponse = ""
   runningProfit = 0
   amountSwapping = 40 #sscrt
+  height = 0
   lastHeight = 0
+  lastProfit = 0
   gasFeeScrt = .050001 + .00027
   print("Starting main loop")
   while keepLooping:
     try:
-      lastHeight = sync_next_block(client, lastHeight)
+      height = sync_next_block(client, height)
       txResponse = ""
       lastSscrtBal = sscrtBal
       scrtBal = int(client.bank.balance(mk.acc_address).to_data()[0]["amount"]) * 10**-6
@@ -259,7 +261,12 @@ def main():
         profit, firstSwap, secondSwap = calculateProfitCP(sswapShd, sswapSscrt, siennaShd, siennaSscrt, amountSwapping, gasFeeScrt)
       if( difference < 0 ):
         profit, firstSwap, secondSwap = calculateProfitCP(siennaShd, siennaSscrt, sswapShd, sswapSscrt, amountSwapping, gasFeeScrt)
-      print(datetime.now(), "  height:", lastHeight, "  profit:", profit)
+      if(profit != lastProfit):
+        print(datetime.now(), "  height:", height, "  profit:", profit)
+      lastProfit = profit
+      if(height != lastHeight + 1 and lastHeight != 0):
+        print("Blocks skipped:", height - lastHeight)
+      lastHeight = height
       if( profit > 0 and difference > 0):
         txResponse = swapSswap(
           client,
@@ -291,7 +298,7 @@ def main():
       if( txResponse != ""):
         runningProfit += profit
         print( runningProfit )
-        txHandle(txResponse, profit, logWriter, runningProfit, lastHeight)
+        txHandle(txResponse, profit, logWriter, runningProfit, height)
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(client)
         sequence = str(int(sequence) + 1)
     except:
@@ -344,7 +351,7 @@ def testMain():
       profit, firstSwap, secondSwap = calculateProfitCP(sswapShd, sswapSscrt, siennaShd, siennaSscrt, amountSwapping, gasFeeScrt)
     if( difference < 0 ):
       profit, firstSwap, secondSwap = calculateProfitCP(siennaShd, siennaSscrt, sswapShd, sswapSscrt, amountSwapping, gasFeeScrt)
-    print(datetime.now(), "  height:", lastHeight, "  profit:", profit)
+    print(datetime.now(), "  height:", height, "  profit:", profit)
     print(firstSwap, secondSwap, profit)
     if(difference > 0):
       txResponse = swapSswap(

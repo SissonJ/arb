@@ -227,12 +227,14 @@ def main():
   txResponse = ""
   runningProfit = 0
   amountSwapping = 40 #sscrt
+  height = 0
   lastHeight = 0
+  lastProfit = 0
   gasFeeScrt = .050001 + .00027
   print("Starting main loop")
   while keepLooping:
     try:
-      lastHeight = sync_next_block(client, lastHeight)
+      height = sync_next_block(client, height)
       #print( "Height: ", lastHeight )
       #print(datetime.now())
       txResponse = ""
@@ -255,14 +257,19 @@ def main():
         profit, firstSwap, secondSwap = calculateProfitCP(sswapShd, sswapSscrt, siennaShd, siennaSscrt, amountSwapping, gasFeeScrt)
       if( difference < 0 ):
         profit, firstSwap, secondSwap = calculateProfitCP(siennaShd, siennaSscrt, sswapShd, sswapSscrt, amountSwapping, gasFeeScrt)
-      print(datetime.now(), "  height:", lastHeight, "  profit:", profit)
+      if(profit != lastProfit):
+        print(datetime.now(), "  height:", height, "  profit:", profit)
+      lastProfit = profit
+      if(height != lastHeight + 1 and lastHeight != 0):
+        print("Blocks skipped:", height - lastHeight)
+      lastHeight = height
       if( profit > 0 and difference > 0):
-        print( "Height: ", lastHeight )
+        print( "Height: ", height )
         #print(datetime.now())
         #print("profit: ", profit)
         #txResponse = swapSswap(amountSwapping, firstSwap, secondSwap)
       if( profit > 0 and difference < 0):
-        print( "Height: ", lastHeight )
+        print( "Height: ", height )
         #print(datetime.now())
         #print("profit: ", profit)
         #txResponse = swapSienna(amountSwapping, firstSwap, secondSwap)

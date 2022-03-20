@@ -1,29 +1,51 @@
-import asyncio
 import csv
 import time
 from datetime import datetime
 import json
 import base64
 
+from BotInfo import BotInfo
+
 from secret_sdk.client.lcd import LCDClient
 from secret_sdk.core.auth.data.tx import StdFee, StdSignMsg
 from secret_sdk.key.mnemonic import MnemonicKey
 from secret_sdk.client.lcd.wallet import Wallet
 
-mkSeed = "easy oxygen bone search trophy soccer video float tiny rack fragile cactus uphold acoustic carbon warm hand pilot topic session because seed magnet domain"
-
-SSWAP_SSCRT_SIENNA_PAIR = "secret1rxrg8mp4qm5703ccz26lgh8hx7gpnkujrn6qcr"
-SSWAP_QUERY = { 'pool': {} }
-SIENNA_SSCRT_SIENNA_PAIR = "secret1guphvlle6wzjswda3ceuuu6m6ty36t6w5jn9rv"
-SIENNA_QUERY = 'pair_info'
+botConfig = {
+  "mkSeed": "MNEMONIC",
+  "pairAddrs": {
+    "pair1": "secret1wwt7nh3zyzessk8c5d98lpfsw79vzpsnerj6d0", #SSWAP_SSCRT_SHD_PAIR
+    "pair2": "secret1drm0dwvewjyy0rhrrw485q4f5dnfm6j25zgfe5", #SIENNA_SSCRT_SHD_PAIR
+  },
+  "pairQueries": {
+    "pair1": { 'pool': {} }, #SSWAP_QUERY
+    "pair2": 'pair_info', #SIENNA_QUERY
+  },
+  "token1First": {
+    "pair1": True,
+    "pair2": False,
+  },
+  "tokenAddrs": {
+    "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
+    "token2": "secret1qfql357amn448duf5gvp9gr48sxx9tsnhupu3d", #SHD_ADDRESS
+  },
+  "tokenDecimals":{
+    "token1": 6,
+    "toekn2": 8,
+  },
+  "clientInfo": {
+    "endpoint": "https://lcd.secret.llc",
+    "chainID": "secret-4"
+  },
+  "logLocation": "shd-scrt-pair-log.csv",
+  "fee": {
+    "gas": 200001,
+    "price": "050001uscrt",
+  },
+}
 
 SSCRT_ADDRESS = 'secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek'
-SSCRT_CONTRACT_HASH = ''
 SSCRT_KEY = 'api_key_nE9AgouX7GVnT0+3LhAGoNmwUZ7HHRR4sUxNB+tbWW4='
-
-SIENNA_ADDRESS = 'secret1rgm2m5t530tdzyd99775n6vzumxa5luxcllml4'
-SIENNA_CONTRACT_HASH = ''
-
 
 def block_height(client:LCDClient):
   block_info = client.tendermint.block_info()
@@ -37,89 +59,97 @@ def sync_next_block(client:LCDClient, height=0):
       return new_height
     time.sleep(.5)
 
-def buyScrt(client:LCDClient, wallet:Wallet, acc_address, scrtBal):
+def buyScrt(botInfo: BotInfo, scrtBal):
   global SSCRT_ADDRESS, SSCRT_KEY
-  sscrtBalRes = client.wasm.contract_query(SSCRT_ADDRESS, { "balance": { "address": acc_address, "key": SSCRT_KEY }})
+  sscrtBalRes = botInfo.client.wasm.contract_query(SSCRT_ADDRESS, { "balance": { "address": botInfo.accAddr, "key": SSCRT_KEY }})
   redeemAmount = int(sscrtBalRes['balance']['amount']) - scrtBal * 10 ** 6
   handleMsg = {"redeem":{"amount":str(redeemAmount)}}
-  res = wallet.execute_tx(SSCRT_ADDRESS, handleMsg)
+  res = botInfo.wallet.execute_tx(SSCRT_ADDRESS, handleMsg)
   return res
 
-def checkScrtBal(client:LCDClient, wallet:Wallet, acc_address, scrtBal, tradeAmount):
+def checkScrtBal(botInfo: BotInfo, scrtBal, tradeAmount):
   if (scrtBal < 1 ):
     print("NOT ENOUGH SCRT")
-    buyScrt(client, wallet, acc_address, tradeAmount)
+    buyScrt(botInfo, tradeAmount)
     return 
   return
 
-def getSiennaRatio(client:LCDClient):
-  siennaInfo = client.wasm.contract_query(SIENNA_SSCRT_SIENNA_PAIR, SIENNA_QUERY)
-  shdAmount, sscrtAmount = float(siennaInfo['pair_info']['amount_0']) * 10**-8, float(siennaInfo['pair_info']['amount_1'])*10**-6
-  return sscrtAmount/shdAmount, shdAmount, sscrtAmount
+#THESE ARE GOING TO NEED WORK
 
-def getSSwapRatio(client:LCDClient):
-  sswapInfo = client.wasm.contract_query(SSWAP_SSCRT_SIENNA_PAIR, SSWAP_QUERY)
-  sscrtAmount, shdAmount = float(sswapInfo['assets'][0]['amount'])*10**-6, float(sswapInfo['assets'][1]['amount'])*10**-8
-  return sscrtAmount/shdAmount, shdAmount, sscrtAmount
+def getSSwapRatio(botInfo: BotInfo):
+  sswapInfo = botInfo.client.wasm.contract_query(botInfo.pairContractAddresses["pair1"], botInfo.pairContractQueries["pair1"])
+  if( botInfo.pairToken1First["pair1"] ):
+    token1Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(sswapInfo['assets'][1]['amount']) * 10**-botInfo.tokenDecimals["token2"]
+  else:
+    token1Amount = float(sswapInfo['assets'][1]['amount']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token2"]
+  return token1Amount/token2Amount, token1Amount, token2Amount
+
+def getSiennaRatio(botInfo: BotInfo):
+  siennaInfo = botInfo.client.wasm.contract_query(botInfo.pairContractAddresses["pair2"], botInfo.pairContractQueries["pair2"])
+  if(botInfo.pairToken1First["pair1"] ):
+    token1Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token2"]
+  else:
+    token1Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token2"]
+  return token1Amount/token2Amount, token1Amount, token2Amount
 
 def constantProduct(poolBuy, poolSell, x):
   out = -(poolBuy * poolSell)/(poolSell + x) + poolBuy
   return out
 
-def calculateProfitCP(s1Shd, s1Sscrt, s2Shd, s2Sscrt, amountSwapped, gasFeeScrt):
-  firstSwap = constantProduct(s1Shd, s1Sscrt, amountSwapped*.996)
-  secondSwap = constantProduct(s2Sscrt, s2Shd, firstSwap*.997) * .999
+def calculateProfitCP(s1t2, s1t1, s2t2, s2t1, amountSwapped, gasFeeScrt):
+  firstSwap = constantProduct(s1t2, s1t1, amountSwapped*.996)
+  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.997) * .999
 
   profit = secondSwap - amountSwapped - gasFeeScrt
   return profit, firstSwap, secondSwap 
 
-def broadcastTx(client: LCDClient, wallet: Wallet, msgExecuteFirst, msgExecuteSecond, accountNumber, sequence, fee: StdFee):
+def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
 
   stdSignMsg = StdSignMsg.from_data({
     "chain_id": "secret-4",
-    "account_number": accountNumber,
-    "sequence": sequence,
-    "fee": fee.to_data(),
+    "account_number": botInfo.accountNum,
+    "sequence": botInfo.sequence,
+    "fee": botInfo.fee.to_data(),
     "msgs": [],
     "memo": "",
   })
 
   stdSignMsg.msgs = [msgExecuteFirst, msgExecuteSecond]
 
-  tx = wallet.key.sign_tx(stdSignMsg)
+  tx = botInfo.wallet.key.sign_tx(stdSignMsg)
   try:
-    res = client.tx.broadcast(tx)
+    res = botInfo.client.tx.broadcast(tx)
     return res
   except:
     print("BROADCAST TX ERROR")
     return False
 
-def createMsgExecuteSienna(client: LCDClient, expectedReturn, amountToSwap, senderAddr, contractAddr, contractHash, nonce, txEncryptionKey):
-  msgSienna = json.dumps({"swap":{"to":None,"expected_return":expectedReturn}})
-  encryptedMsgSienna = str( base64.b64encode(msgSienna.encode("utf-8")), "utf-8")
-  handleMsgSienna = { "send": {"recipient": SIENNA_SSCRT_SIENNA_PAIR, "amount": amountToSwap, "msg": encryptedMsgSienna }}
-  msgExecuteSienna = client.wasm.contract_execute_msg(senderAddr, contractAddr, handleMsgSienna, [], contractHash, nonce, txEncryptionKey)
-  return msgExecuteSienna
-
-def createMsgExecuteSswap(client: LCDClient, expectedReturn, amountToSwap, senderAddr, contractAddr, contractHash, nonce, txEncryptionKey):
+def createMsgExecuteSswap(botInfo: BotInfo, expectedReturn, amountToSwap, contractAddr, contractHash, nonce, txEncryptionKey):
   msgSswap = json.dumps({"swap":{"expected_return":expectedReturn}})
   encryptedMsgSswap = str( base64.b64encode(msgSswap.encode("utf-8")), "utf-8")
-  handleMsgSswap = { "send": {"recipient": SSWAP_SSCRT_SIENNA_PAIR, "amount": amountToSwap, "msg": encryptedMsgSswap }}
-  msgExecuteSswap = client.wasm.contract_execute_msg(senderAddr, contractAddr, handleMsgSswap, [], contractHash, nonce, txEncryptionKey)
+  handleMsgSswap = { "send": {"recipient": botInfo.pairContractAddresses["pair1"], "amount": amountToSwap, "msg": encryptedMsgSswap }}
+  msgExecuteSswap = botInfo.client.wasm.contract_execute_msg(botInfo.accAddr, contractAddr, handleMsgSswap, [], contractHash, nonce, txEncryptionKey)
   return msgExecuteSswap
 
+def createMsgExecuteSienna(botInfo: BotInfo, expectedReturn, amountToSwap, contractAddr, contractHash, nonce, txEncryptionKey):
+  msgSienna = json.dumps({"swap":{"to":None,"expected_return":expectedReturn}})
+  encryptedMsgSienna = str( base64.b64encode(msgSienna.encode("utf-8")), "utf-8")
+  handleMsgSienna = { "send": {"recipient": botInfo.pairContractAddresses["pair2"], "amount": amountToSwap, "msg": encryptedMsgSienna }}
+  msgExecuteSienna = botInfo.client.wasm.contract_execute_msg(botInfo.accAddr, contractAddr, handleMsgSienna, [], contractHash, nonce, txEncryptionKey)
+  return msgExecuteSienna
+
+
 def swapSienna(
-    client: LCDClient, 
-    wallet: Wallet,
+    botInfo: BotInfo,
     sscrtBal, 
     firstSwap, 
     secondSwap, 
     nonceDict, 
     txEncryptionKeyDict,
-    contractHashes,
-    accNum,
-    sequence,
-    fee,
   ):
 
   sscrtBalStr = str(int(sscrtBal * 10 ** 6))
@@ -127,41 +157,34 @@ def swapSienna(
   secondSwapStr = str(int(secondSwap * 10 ** 6))
 
   msgExecuteSienna = createMsgExecuteSienna(
-    client, 
+    botInfo, 
     firstSwapStr, 
-    sscrtBalStr, 
-    wallet.key.acc_address, 
-    SSCRT_ADDRESS,
-    contractHashes["SSCRT"],
+    sscrtBalStr,  
+    botInfo.tokenContractAddresses["token1"],
+    botInfo.tokenContractHashes["token1"],
     nonceDict['first'], 
     txEncryptionKeyDict['first'],
   )
 
   msgExecuteSswap = createMsgExecuteSswap(
-    client,
+    botInfo,
     secondSwapStr,
     firstSwapStr,
-    wallet.key.acc_address,
-    SIENNA_ADDRESS,
-    contractHashes["SHD"], 
+    botInfo.tokenContractAddresses["token2"],
+    botInfo.tokenContractHashes["token2"], 
     nonceDict["second"],
     txEncryptionKeyDict["second"],
   )
   
-  return broadcastTx(client, wallet, msgExecuteSienna, msgExecuteSswap, accNum, sequence, fee)
+  return broadcastTx(botInfo, msgExecuteSienna, msgExecuteSswap)
 
 def swapSswap(
-    client: LCDClient, 
-    wallet: Wallet,
+    botInfo: BotInfo,
     sscrtBal, 
     firstSwap, 
     secondSwap, 
     nonceDict, 
     txEncryptionKeyDict,
-    contractHashes,
-    accNum,
-    sequence,
-    fee,
   ):
 
   sscrtBalStr = str(int(sscrtBal * 10 ** 6))
@@ -169,50 +192,48 @@ def swapSswap(
   secondSwapStr = str(int(secondSwap * 10 ** 6))
 
   msgExecuteSswap = createMsgExecuteSswap(
-    client, 
+    botInfo, 
     firstSwapStr,
     sscrtBalStr,
-    wallet.key.acc_address,
-    SSCRT_ADDRESS,
-    contractHashes["SSCRT"],
+    botInfo.tokenContractAddresses["token1"],
+    botInfo.tokenContractHashes["token1"],
     nonceDict["first"],
     txEncryptionKeyDict["first"],
   )
 
   msgExecuteSienna = createMsgExecuteSienna(
-    client,
+    botInfo,
     secondSwapStr,
     firstSwapStr,
-    wallet.key.acc_address,
-    SIENNA_ADDRESS,
-    contractHashes["SHD"],
+    botInfo.tokenContractAddresses["token2"],
+    botInfo.tokenContractHashes["token2"],
     nonceDict["second"],
     txEncryptionKeyDict["second"]
   )
 
-  return broadcastTx(client, wallet, msgExecuteSswap, msgExecuteSienna, accNum, sequence, fee)
+  return broadcastTx(botInfo, msgExecuteSswap, msgExecuteSienna)
 
 def generateTxEncryptionKeys(client: LCDClient):
   nonceDict = {"first":client.utils.generate_new_seed(), "second":client.utils.generate_new_seed()}
   txEncryptionKeyDict = {"first":client.utils.get_tx_encryption_key(nonceDict["first"]), "second":client.utils.get_tx_encryption_key(nonceDict["second"])}
   return nonceDict, txEncryptionKeyDict
 
-def txHandle(txResponse, profit, logWriter, runningProfit):
+def txHandle(txResponse, profit, logWriter, runningProfit, lastHeight):
   if(not txResponse):
     print( "ERROR" )
     return False
   
   if(txResponse.is_tx_error()):
-    logWriter.writerow([txResponse.to_json()])
+    #logWriter.writerow([txResponse.to_json()])
     print(txResponse.to_json())
-    logWriter.writerow([datetime.now(), "Error", txResponse.txhash])
+    logWriter.writerow([datetime.now(), "Error", txResponse.txhash, "height", lastHeight])
     print(txResponse.txhash)
     return False
 
   print(txResponse.txhash)
-  logWriter.writerow([txResponse.to_json()])
+  #logWriter.writerow([txResponse.to_json()])
   print(txResponse.to_json())
-  logWriter.writerow([datetime.now(), "profit", str(profit), "runningTotal", str(runningProfit)])
+  logWriter.writerow([datetime.now(), "profit", str(profit), "runningTotal", str(runningProfit), txResponse.txhash, "height", lastHeight])
 
   return True
 
@@ -225,7 +246,7 @@ def main():
   client = LCDClient('https://lcd.secret.llc', 'secret-4')
   wallet = client.wallet(mk)
   SSCRT_CONTRACT_HASH = client.wasm.contract_hash(SSCRT_ADDRESS)
-  SHD_CONTRACT_HASH = client.wasm.contract_hash(SIENNA_ADDRESS)
+  SHD_CONTRACT_HASH = client.wasm.contract_hash(SHD_ADDRESS)
   contractHashes = { "SHD": SHD_CONTRACT_HASH, "SSCRT": SSCRT_CONTRACT_HASH}
   nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(client)
   fee = StdFee(200001, "050001uscrt")
@@ -246,8 +267,8 @@ def main():
       lastSscrtBal = sscrtBal
       scrtBal = int(client.bank.balance(mk.acc_address).to_data()[0]["amount"]) * 10**-6
       checkScrtBal(client, wallet, mk.acc_address, scrtBal, amountSwapping)
-      siennaRatio, siennaShd, siennaSscrt = getSiennaRatio(client)
-      sswapRatio, sswapShd, sswapSscrt = getSSwapRatio(client)
+      siennaRatio, siennat2, siennat1 = getSiennaRatio(client)
+      sswapRatio, sswapt2, sswapt1 = getSSwapRatio(client)
     except:
       print("ERROR in queries\n")
       continue
@@ -255,9 +276,9 @@ def main():
       difference = siennaRatio - sswapRatio 
       profit= firstSwap = secondSwap = 0
       if( difference > 0 ):
-        profit, firstSwap, secondSwap = calculateProfitCP(sswapShd, sswapSscrt, siennaShd, siennaSscrt, amountSwapping, gasFeeScrt)
+        profit, firstSwap, secondSwap = calculateProfitCP(sswapt2, sswapt1, siennat2, siennat1, amountSwapping, gasFeeScrt)
       if( difference < 0 ):
-        profit, firstSwap, secondSwap = calculateProfitCP(siennaShd, siennaSscrt, sswapShd, sswapSscrt, amountSwapping, gasFeeScrt)
+        profit, firstSwap, secondSwap = calculateProfitCP(siennat2, siennat1, sswapt2, sswapt1, amountSwapping, gasFeeScrt)
       print(datetime.now(), "  height:", lastHeight, "  profit:", profit)
       if( profit > 0 and difference > 0):
         txResponse = swapSswap(
@@ -289,7 +310,8 @@ def main():
         )
       if( txResponse != ""):
         runningProfit += profit
-        txHandle(txResponse, profit, logWriter, runningProfit)
+        print( runningProfit )
+        txHandle(txResponse, profit, logWriter, runningProfit, lastHeight)
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(client)
         sequence = str(int(sequence) + 1)
     except:
@@ -298,22 +320,16 @@ def main():
   print( runningProfit )
   txLog.close()
 
-main()
+#main()
 
 def testMain():
-  global SSCRT_CONTRACT_HASH, SIENNA_CONTRACT_HASH
-  txLog = open("shd-scrt-pair-log.csv", "a")
+  global botConfig
+  txLog = open(botConfig["logLocation"], "a")
   logWriter = csv.writer(txLog, delimiter=' ')
 
-  mk = MnemonicKey(mnemonic=mkSeed)
-  client = LCDClient('https://lcd.secret.llc', 'secret-4')
-  wallet = client.wallet(mk)
-  SSCRT_CONTRACT_HASH = client.wasm.contract_hash(SSCRT_ADDRESS)
-  SIENNA_CONTRACT_HASH = client.wasm.contract_hash(SIENNA_ADDRESS)
-  contractHashes = { "SHD": SIENNA_CONTRACT_HASH, "SSCRT": SSCRT_CONTRACT_HASH}
-  nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(client)
-  fee = StdFee(200001, "050001uscrt")
-  accountNumber, sequence = wallet.account_number(), wallet.sequence()
+  botInfo = BotInfo(botConfig)
+
+  nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
 
   scrtBal, sscrtBal, shdBal, lastSscrtBal = 0, 0, 0, 0
   keepLooping = True
@@ -324,14 +340,14 @@ def testMain():
   gasFeeScrt = .050001 + .00027
   print("Starting test")
   try:
-    lastHeight = sync_next_block(client, lastHeight)
+    lastHeight = sync_next_block(botInfo.client, lastHeight)
     txResponse = ""
     lastSscrtBal = sscrtBal
     #scrtBal, sscrtBal, shdBal = getBalances(scrtBal, sscrtBal, shdBal)
-    scrtBal = int(client.bank.balance(mk.acc_address).to_data()[0]["amount"]) * 10**-6
-    checkScrtBal(client, wallet, mk.acc_address, scrtBal, amountSwapping)
-    siennaRatio, siennaShd, siennaSscrt = getSiennaRatio(client)
-    sswapRatio, sswapShd, sswapSscrt = getSSwapRatio(client)
+    scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
+    checkScrtBal(botInfo, scrtBal, amountSwapping)
+    siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo.client)
+    sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo.client)
   except:
     print("ERROR in queries\n")
     return
@@ -339,45 +355,35 @@ def testMain():
     difference = siennaRatio - sswapRatio 
     profit= firstSwap = secondSwap = 0
     if( difference > 0 ):
-      profit, firstSwap, secondSwap = calculateProfitCP(sswapShd, sswapSscrt, siennaShd, siennaSscrt, amountSwapping, gasFeeScrt)
+      profit, firstSwap, secondSwap = calculateProfitCP(sswapt2, sswapt1, siennat2, siennat1, amountSwapping, gasFeeScrt)
     if( difference < 0 ):
-      profit, firstSwap, secondSwap = calculateProfitCP(siennaShd, siennaSscrt, sswapShd, sswapSscrt, amountSwapping, gasFeeScrt)
+      profit, firstSwap, secondSwap = calculateProfitCP(siennat2, siennat1, sswapt2, sswapt1, amountSwapping, gasFeeScrt)
     print(datetime.now(), "  height:", lastHeight, "  profit:", profit)
     print(firstSwap, secondSwap, profit)
     if(difference > 0):
       txResponse = swapSswap(
-        client,
-        wallet,
+        botInfo,
         amountSwapping,
         firstSwap,
         secondSwap,
         nonceDict,
         txEncryptionKeyDict,
-        contractHashes,
-        accountNumber,
-        sequence,
-        fee,
       )
     if(difference < 0):
       txResponse = swapSienna(
-        client,
-        wallet,
+        botInfo,
         amountSwapping,
         firstSwap,
         secondSwap,
         nonceDict,
         txEncryptionKeyDict,
-        contractHashes,
-        accountNumber,
-        sequence,
-        fee,
       )
     if( txResponse != ""):
       runningProfit += profit
       txHandle(txResponse, profit, logWriter, runningProfit)
       print(nonceDict)
-      nonceDict, txEncryptionkeyDict = generateTxEncryptionKeys(client)
-      sequence = str(int(sequence) + 1)
+      nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
+      botInfo.sequence = botInfo.sequence + 1
   except:
     print( "ERROR in tx\n" )
     return
