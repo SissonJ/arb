@@ -12,18 +12,17 @@ from secret_sdk.client.lcd.wallet import Wallet
 
 mkSeed = "easy oxygen bone search trophy soccer video float tiny rack fragile cactus uphold acoustic carbon warm hand pilot topic session because seed magnet domain"
 
-SSWAP_SSCRT_SHD_PAIR = "secret1wwt7nh3zyzessk8c5d98lpfsw79vzpsnerj6d0"
+SSWAP_SSCRT_SIENNA_PAIR = "secret1rxrg8mp4qm5703ccz26lgh8hx7gpnkujrn6qcr"
 SSWAP_QUERY = { 'pool': {} }
-SIENNA_SSCRT_SHD_PAIR = "secret1drm0dwvewjyy0rhrrw485q4f5dnfm6j25zgfe5"
+SIENNA_SSCRT_SIENNA_PAIR = "secret1guphvlle6wzjswda3ceuuu6m6ty36t6w5jn9rv"
 SIENNA_QUERY = 'pair_info'
 
 SSCRT_ADDRESS = 'secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek'
 SSCRT_CONTRACT_HASH = ''
 SSCRT_KEY = 'api_key_nE9AgouX7GVnT0+3LhAGoNmwUZ7HHRR4sUxNB+tbWW4='
 
-SHD_ADDRESS = 'secret1qfql357amn448duf5gvp9gr48sxx9tsnhupu3d'
-SHD_CONTRACT_HASH = ''
-SHD_KEY = 'api_key_xSmcfnyU8z5750bZSC9icFYUz6whMLIUeEloEqORQ7M='
+SIENNA_ADDRESS = 'secret1rgm2m5t530tdzyd99775n6vzumxa5luxcllml4'
+SIENNA_CONTRACT_HASH = ''
 
 
 def block_height(client:LCDClient):
@@ -54,12 +53,12 @@ def checkScrtBal(client:LCDClient, wallet:Wallet, acc_address, scrtBal, tradeAmo
   return
 
 def getSiennaRatio(client:LCDClient):
-  siennaInfo = client.wasm.contract_query(SIENNA_SSCRT_SHD_PAIR, SIENNA_QUERY)
+  siennaInfo = client.wasm.contract_query(SIENNA_SSCRT_SIENNA_PAIR, SIENNA_QUERY)
   shdAmount, sscrtAmount = float(siennaInfo['pair_info']['amount_0']) * 10**-8, float(siennaInfo['pair_info']['amount_1'])*10**-6
   return sscrtAmount/shdAmount, shdAmount, sscrtAmount
 
 def getSSwapRatio(client:LCDClient):
-  sswapInfo = client.wasm.contract_query(SSWAP_SSCRT_SHD_PAIR, SSWAP_QUERY)
+  sswapInfo = client.wasm.contract_query(SSWAP_SSCRT_SIENNA_PAIR, SSWAP_QUERY)
   sscrtAmount, shdAmount = float(sswapInfo['assets'][0]['amount'])*10**-6, float(sswapInfo['assets'][1]['amount'])*10**-8
   return sscrtAmount/shdAmount, shdAmount, sscrtAmount
 
@@ -98,14 +97,14 @@ def broadcastTx(client: LCDClient, wallet: Wallet, msgExecuteFirst, msgExecuteSe
 def createMsgExecuteSienna(client: LCDClient, expectedReturn, amountToSwap, senderAddr, contractAddr, contractHash, nonce, txEncryptionKey):
   msgSienna = json.dumps({"swap":{"to":None,"expected_return":expectedReturn}})
   encryptedMsgSienna = str( base64.b64encode(msgSienna.encode("utf-8")), "utf-8")
-  handleMsgSienna = { "send": {"recipient": SIENNA_SSCRT_SHD_PAIR, "amount": amountToSwap, "msg": encryptedMsgSienna }}
+  handleMsgSienna = { "send": {"recipient": SIENNA_SSCRT_SIENNA_PAIR, "amount": amountToSwap, "msg": encryptedMsgSienna }}
   msgExecuteSienna = client.wasm.contract_execute_msg(senderAddr, contractAddr, handleMsgSienna, [], contractHash, nonce, txEncryptionKey)
   return msgExecuteSienna
 
 def createMsgExecuteSswap(client: LCDClient, expectedReturn, amountToSwap, senderAddr, contractAddr, contractHash, nonce, txEncryptionKey):
   msgSswap = json.dumps({"swap":{"expected_return":expectedReturn}})
   encryptedMsgSswap = str( base64.b64encode(msgSswap.encode("utf-8")), "utf-8")
-  handleMsgSswap = { "send": {"recipient": SSWAP_SSCRT_SHD_PAIR, "amount": amountToSwap, "msg": encryptedMsgSswap }}
+  handleMsgSswap = { "send": {"recipient": SSWAP_SSCRT_SIENNA_PAIR, "amount": amountToSwap, "msg": encryptedMsgSswap }}
   msgExecuteSswap = client.wasm.contract_execute_msg(senderAddr, contractAddr, handleMsgSswap, [], contractHash, nonce, txEncryptionKey)
   return msgExecuteSswap
 
@@ -143,7 +142,7 @@ def swapSienna(
     secondSwapStr,
     firstSwapStr,
     wallet.key.acc_address,
-    SHD_ADDRESS,
+    SIENNA_ADDRESS,
     contractHashes["SHD"], 
     nonceDict["second"],
     txEncryptionKeyDict["second"],
@@ -185,7 +184,7 @@ def swapSswap(
     secondSwapStr,
     firstSwapStr,
     wallet.key.acc_address,
-    SHD_ADDRESS,
+    SIENNA_ADDRESS,
     contractHashes["SHD"],
     nonceDict["second"],
     txEncryptionKeyDict["second"]
@@ -226,7 +225,7 @@ def main():
   client = LCDClient('https://lcd.secret.llc', 'secret-4')
   wallet = client.wallet(mk)
   SSCRT_CONTRACT_HASH = client.wasm.contract_hash(SSCRT_ADDRESS)
-  SHD_CONTRACT_HASH = client.wasm.contract_hash(SHD_ADDRESS)
+  SHD_CONTRACT_HASH = client.wasm.contract_hash(SIENNA_ADDRESS)
   contractHashes = { "SHD": SHD_CONTRACT_HASH, "SSCRT": SSCRT_CONTRACT_HASH}
   nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(client)
   fee = StdFee(200001, "050001uscrt")
@@ -290,7 +289,6 @@ def main():
         )
       if( txResponse != ""):
         runningProfit += profit
-        print( runningProfit )
         txHandle(txResponse, profit, logWriter, runningProfit)
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(client)
         sequence = str(int(sequence) + 1)
@@ -311,7 +309,7 @@ def testMain():
   client = LCDClient('https://lcd.secret.llc', 'secret-4')
   wallet = client.wallet(mk)
   SSCRT_CONTRACT_HASH = client.wasm.contract_hash(SSCRT_ADDRESS)
-  SHD_CONTRACT_HASH = client.wasm.contract_hash(SHD_ADDRESS)
+  SHD_CONTRACT_HASH = client.wasm.contract_hash(SIENNA_ADDRESS)
   contractHashes = { "SHD": SHD_CONTRACT_HASH, "SSCRT": SSCRT_CONTRACT_HASH}
   nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(client)
   fee = StdFee(200001, "050001uscrt")

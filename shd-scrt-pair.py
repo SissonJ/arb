@@ -253,20 +253,19 @@ def main():
       profit= firstSwap = secondSwap = 0
       if( difference > 0 ):
         profit, firstSwap, secondSwap = calculateProfitCP(sswapShd, sswapSscrt, siennaShd, siennaSscrt, amountSwapping, gasFeeScrt)
-        print(datetime.now(), "  profit:", profit)
       if( difference < 0 ):
         profit, firstSwap, secondSwap = calculateProfitCP(siennaShd, siennaSscrt, sswapShd, sswapSscrt, amountSwapping, gasFeeScrt)
-        print(datetime.now(), "  height:", lastHeight, "  profit:", profit)
+      print(datetime.now(), "  height:", lastHeight, "  profit:", profit)
       if( profit > 0 and difference > 0):
         print( "Height: ", lastHeight )
         #print(datetime.now())
         #print("profit: ", profit)
-        txResponse = swapSswap(amountSwapping, firstSwap, secondSwap)
+        #txResponse = swapSswap(amountSwapping, firstSwap, secondSwap)
       if( profit > 0 and difference < 0):
         print( "Height: ", lastHeight )
         #print(datetime.now())
         #print("profit: ", profit)
-        txResponse = swapSienna(amountSwapping, firstSwap, secondSwap)
+        #txResponse = swapSienna(amountSwapping, firstSwap, secondSwap)
       if( txResponse != ""):
         runningProfit += profit
         txHandle(txResponse, profit, logWriter, runningProfit)
@@ -277,7 +276,7 @@ def main():
   print( runningProfit )
   txLog.close()
 
-#main()
+main()
 
 def testFunction():
   #txLog = open("tx_log.csv", "a")
@@ -300,7 +299,7 @@ def testFunction():
   print(res.to_json())
 
 
-testFunction()
+#testFunction()
 
 
 
