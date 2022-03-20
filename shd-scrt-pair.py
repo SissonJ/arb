@@ -99,7 +99,7 @@ def encryptAndBroadcastTx(msgExecuteFirst, msgExecuteSecond):
     "msgs": [],
     "memo": "",
   })
-  stdSignMsg.msgs = [msgExecuteFirst, msgExecuteSecond]
+  stdSignMsg.msgs = [msgExecuteSecond, msgExecuteFirst]
 
   sequence = str(int(sequence) + 1)
 
@@ -148,14 +148,17 @@ def swapSswap(sscrtBal, firstSwap, secondSwap):
   msgSswap = json.dumps({"swap":{"expected_return":firstSwapStr}})
   encryptedMsgSswap = str( base64.b64encode(msgSswap.encode("utf-8")), "utf-8")
   handleMsgSswap = { "send": {"recipient": SSWAP_SSCRT_SHD_PAIR, "amount": sscrtBalStr, "msg": encryptedMsgSswap }}
-  handleMsgSswapStr = json.dumps(handleMsgSswap, separators=(",", ":"))
-  msgExecuteSswap = encryptHandleMsg(SHD_ADDRESS, handleMsgSswapStr, SHD_CONTRACT_HASH, False)
+  #handleMsgSswapStr = json.dumps(handleMsgSswap, separators=(",", ":"))
+  #msgExecuteSswap = encryptHandleMsg(SHD_ADDRESS, handleMsgSswapStr, SHD_CONTRACT_HASH, False)
+  msgExecuteSswap = client.wasm.contract_execute_msg(mk.acc_address, SHD_ADDRESS, handleMsgSswap, [], SHD_CONTRACT_HASH)
 
   msgSienna = json.dumps({"swap":{"to":None,"expected_return":secondSwapStr}})
   encryptedMsgSienna = str( base64.b64encode(msgSienna.encode("utf-8")), "utf-8")
   handleMsgSienna = { "send": {"recipient": SIENNA_SSCRT_SHD_PAIR, "amount": firstSwapStr, "msg": encryptedMsgSienna }}
-  handleMsgSiennaStr = json.dumps(handleMsgSienna, separators=(",", ":"))
-  msgExecuteSienna = encryptHandleMsg(SSCRT_ADDRESS, handleMsgSiennaStr, SSCRT_CONTRACT_HASH, True)
+  #handleMsgSiennaStr = json.dumps(handleMsgSienna, separators=(",", ":"))
+  #msgExecuteSienna = encryptHandleMsg(SSCRT_ADDRESS, handleMsgSiennaStr, SSCRT_CONTRACT_HASH, True)
+  msgExecuteSienna = client.wasm.contract_execute_msg(mk.acc_address, SSCRT_ADDRESS, handleMsgSienna, [], SSCRT_CONTRACT_HASH)
+  print(msgExecuteSienna.to_data())
 
   #res = wallet.execute_tx(SSCRT_ADDRESS, handleMsgSswap) #OTHER METHOD
 

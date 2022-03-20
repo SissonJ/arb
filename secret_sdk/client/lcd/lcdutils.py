@@ -1,7 +1,7 @@
 import base64
 import secrets
 from functools import reduce
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
@@ -126,11 +126,19 @@ class AsyncLCDUtils(BaseAsyncAPI):
 
         return tx_encryption_key
 
-    async def encrypt(self, contract_code_hash: str, msg: Any):
-        nonce = self.generate_new_seed()
-        tx_encryption_key = await BaseAsyncAPI._try_await(
-            self.get_tx_encryption_key(nonce)
-        )
+    async def encrypt(
+            self, 
+            contract_code_hash: str, 
+            msg: Any, 
+            nonce: Optional[int]=0, 
+            tx_encryption_key: Optional[str]=''
+        ):
+        if(nonce == 0):
+            nonce = self.generate_new_seed()
+        if(tx_encryption_key == ''):
+            tx_encryption_key = await BaseAsyncAPI._try_await(
+                self.get_tx_encryption_key(nonce)
+            )
 
         siv = SIV(tx_encryption_key)
 

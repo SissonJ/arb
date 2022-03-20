@@ -120,14 +120,18 @@ class AsyncWasmAPI(BaseAsyncAPI):
         contract_address: AccAddress,
         handle_msg: dict,
         transfer_amount: Optional[Coins] = None,
+        contract_code_hash: Optional[str] = '',
+        nonce: Optional[Any]=0, 
+        tx_encryption_key: Optional[str]='',
     ) -> MsgExecuteContract:
         msg_str = json.dumps(handle_msg, separators=(",", ":"))
-        contract_code_hash = await BaseAsyncAPI._try_await(
-            self.contract_hash(contract_address)
-        )
+        if( contract_code_hash == ''):
+            contract_code_hash = await BaseAsyncAPI._try_await(
+                self.contract_hash(contract_address)
+            )
 
         encrypted_msg = await BaseAsyncAPI._try_await(
-            self._c.utils.encrypt(contract_code_hash, msg_str)
+            self._c.utils.encrypt(contract_code_hash, msg_str, nonce, tx_encryption_key)
         )
         encrypted_msg = base64.b64encode(bytes(encrypted_msg)).decode()
         return MsgExecuteContract(
@@ -187,6 +191,9 @@ class WasmAPI(AsyncWasmAPI):
         contract_address: AccAddress,
         handle_msg: dict,
         transfer_amount: Coins,
+        contract_code_hash: str,
+        nonce: Any, 
+        tx_encryption_key: str,
     ) -> MsgExecuteContract:
         pass
 
