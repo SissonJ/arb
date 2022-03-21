@@ -1,1 +1,4 @@
 config.py
+*.csv
+__pycache__
+secret_sdk/__pycache__
