@@ -1,4 +1,5 @@
-mkSeed = "easy oxygen bone search trophy soccer video float tiny rack fragile cactus uphold acoustic carbon warm hand pilot topic session because seed magnet domain"
+mkSeed = "SEED"
+endpoint = "ENDPOINT"
 
 config = {
   "sscrt-shd-config": {
@@ -24,7 +25,7 @@ config = {
         "token2": 8,
     },
     "clientInfo": {
-        "endpoint": "https://lcd.secret.llc",
+        "endpoint": endpoint,
         "chainID": "secret-4"
     },
     "logLocation": "shd-scrt-pair-log.csv",

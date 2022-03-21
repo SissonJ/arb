@@ -225,15 +225,13 @@ def txHandle(txResponse, profit, logWriter, runningProfit, lastHeight):
   
   if(txResponse.is_tx_error()):
     #logWriter.writerow([txResponse.to_json()])
-    print(txResponse.to_json())
     logWriter.writerow([datetime.now(), "Error", txResponse.txhash, "height", lastHeight])
     print(txResponse.txhash)
     return False
 
-  print(txResponse.txhash)
   #logWriter.writerow([txResponse.to_json()])
   print(txResponse.to_json())
-  logWriter.writerow([datetime.now(), "profit", str(profit), "runningTotal", str(runningProfit), txResponse.txhash, "height", lastHeight])
+  logWriter.writerow([datetime.now(), "profit", str(profit), "runningTotal", str(runningProfit), "txHash", txResponse.txhash, "height", lastHeight])
 
   return True
 
@@ -356,7 +354,6 @@ def testMain():
       profit, firstSwap, secondSwap = calculateProfitCP(siennat2, siennat1, sswapt2, sswapt1, amountSwapping, gasFeeScrt)
     print(datetime.now(), "  height:", lastHeight, "  profit:", profit)
     if(difference > 0):
-      return
       txResponse = swapSswap(
         botInfo,
         amountSwapping,
@@ -366,7 +363,6 @@ def testMain():
         txEncryptionKeyDict,
       )
     if(difference < 0):
-      return
       txResponse = swapSienna(
         botInfo,
         amountSwapping,
@@ -377,12 +373,13 @@ def testMain():
       )
     if( txResponse != ""):
       runningProfit += profit
-      txHandle(txResponse, profit, logWriter, runningProfit)
+      txHandle(txResponse, profit, logWriter, runningProfit, lastHeight)
       print(nonceDict)
       nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
       botInfo.sequence = botInfo.wallet.sequence()
-  except:
+  except Exception as e:
     print( "ERROR in tx\n" )
+    print( e )
     return
   print( runningProfit )
   txLog.close()
