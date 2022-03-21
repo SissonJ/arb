@@ -1,4 +1,4 @@
-config.py
-*.csv
+logs
+env.py
 __pycache__
 secret_sdk/__pycache__
