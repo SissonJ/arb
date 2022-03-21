@@ -3,8 +3,10 @@ import time
 from datetime import datetime
 import json
 import base64
+import sys
 
 from BotInfo import BotInfo
+from config import config
 
 from secret_sdk.client.lcd import LCDClient
 from secret_sdk.core.auth.data.tx import StdFee, StdSignMsg
@@ -74,8 +76,6 @@ def checkScrtBal(botInfo: BotInfo, scrtBal, tradeAmount):
     return 
   return
 
-#THESE ARE GOING TO NEED WORK
-
 def getSSwapRatio(botInfo: BotInfo):
   sswapInfo = botInfo.client.wasm.contract_query(botInfo.pairContractAddresses["pair1"], botInfo.pairContractQueries["pair1"])
   if( botInfo.pairToken1First["pair1"] ):
@@ -88,7 +88,7 @@ def getSSwapRatio(botInfo: BotInfo):
 
 def getSiennaRatio(botInfo: BotInfo):
   siennaInfo = botInfo.client.wasm.contract_query(botInfo.pairContractAddresses["pair2"], botInfo.pairContractQueries["pair2"])
-  if(botInfo.pairToken1First["pair1"] ):
+  if(botInfo.pairToken1First["pair2"] ):
     token1Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token1"]
     token2Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token2"]
   else:
@@ -327,7 +327,7 @@ def testMain():
   txLog = open(botConfig["logLocation"], "a")
   logWriter = csv.writer(txLog, delimiter=' ')
 
-  botInfo = BotInfo(botConfig)
+  botInfo = BotInfo(config[sys.argv[1]])
 
   nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
 
@@ -338,19 +338,15 @@ def testMain():
   amountSwapping = 40 #sscrt
   lastHeight = 0
   gasFeeScrt = .050001 + .00027
-  print("Starting test")
-  try:
-    lastHeight = sync_next_block(botInfo.client, lastHeight)
-    txResponse = ""
-    lastSscrtBal = sscrtBal
-    #scrtBal, sscrtBal, shdBal = getBalances(scrtBal, sscrtBal, shdBal)
-    scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
-    checkScrtBal(botInfo, scrtBal, amountSwapping)
-    siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo.client)
-    sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo.client)
-  except:
-    print("ERROR in queries\n")
-    return
+  print("Starting test", sys.argv[1])
+  lastHeight = sync_next_block(botInfo.client, lastHeight)
+  txResponse = ""
+  lastSscrtBal = sscrtBal
+  #scrtBal, sscrtBal, shdBal = getBalances(scrtBal, sscrtBal, shdBal)
+  scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
+  checkScrtBal(botInfo, scrtBal, amountSwapping)
+  siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo)
+  sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo)
   try:
     difference = siennaRatio - sswapRatio 
     profit= firstSwap = secondSwap = 0
@@ -359,8 +355,8 @@ def testMain():
     if( difference < 0 ):
       profit, firstSwap, secondSwap = calculateProfitCP(siennat2, siennat1, sswapt2, sswapt1, amountSwapping, gasFeeScrt)
     print(datetime.now(), "  height:", lastHeight, "  profit:", profit)
-    print(firstSwap, secondSwap, profit)
     if(difference > 0):
+      return
       txResponse = swapSswap(
         botInfo,
         amountSwapping,
@@ -370,6 +366,7 @@ def testMain():
         txEncryptionKeyDict,
       )
     if(difference < 0):
+      return
       txResponse = swapSienna(
         botInfo,
         amountSwapping,
@@ -383,14 +380,14 @@ def testMain():
       txHandle(txResponse, profit, logWriter, runningProfit)
       print(nonceDict)
       nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
-      botInfo.sequence = botInfo.sequence + 1
+      botInfo.sequence = botInfo.wallet.sequence()
   except:
     print( "ERROR in tx\n" )
     return
   print( runningProfit )
   txLog.close()
 
-#testMain()
+testMain()
 
 def executeOneSwap():
   mk = MnemonicKey(mnemonic=mkSeed)

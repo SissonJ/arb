@@ -91,8 +91,9 @@ def broadcastTx(client: LCDClient, wallet: Wallet, msgExecuteFirst, msgExecuteSe
   try:
     res = client.tx.broadcast(tx)
     return res
-  except:
+  except Exception as e:
     print("BROADCAST TX ERROR")
+    print( e )
     return False
 
 def createMsgExecuteSienna(client: LCDClient, expectedReturn, amountToSwap, senderAddr, contractAddr, contractHash, nonce, txEncryptionKey):
@@ -251,8 +252,9 @@ def main():
       checkScrtBal(client, wallet, mk.acc_address, scrtBal, amountSwapping)
       siennaRatio, siennaShd, siennaSscrt = getSiennaRatio(client)
       sswapRatio, sswapShd, sswapSscrt = getSSwapRatio(client)
-    except:
+    except Exception as e:
       print("ERROR in queries\n")
+      print(e)
       continue
     try:
       difference = siennaRatio - sswapRatio 
@@ -265,7 +267,7 @@ def main():
         print(datetime.now(), "  height:", height, "  profit:", profit)
       lastProfit = profit
       if(height != lastHeight + 1 and lastHeight != 0):
-        print("Blocks skipped:", height - lastHeight)
+        print(datetime.now(), "blocks skipped:", height - lastHeight)
       lastHeight = height
       if( profit > 0 and difference > 0):
         txResponse = swapSswap(
@@ -300,9 +302,10 @@ def main():
         print( runningProfit )
         txHandle(txResponse, profit, logWriter, runningProfit, height)
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(client)
-        sequence = str(int(sequence) + 1)
-    except:
+        sequence = wallet.sequence()
+    except Exception as e:
       print( "ERROR in tx\n" )
+      print( e )
       continue
   print( runningProfit )
   txLog.close()

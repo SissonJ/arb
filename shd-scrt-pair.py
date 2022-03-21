@@ -261,7 +261,7 @@ def main():
         print(datetime.now(), "  height:", height, "  profit:", profit)
       lastProfit = profit
       if(height != lastHeight + 1 and lastHeight != 0):
-        print("Blocks skipped:", height - lastHeight)
+        print(datetime.now(), "Blocks skipped:", height - lastHeight)
       lastHeight = height
       if( profit > 0 and difference > 0):
         print( "Height: ", height )
