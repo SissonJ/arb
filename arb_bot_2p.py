@@ -10,8 +10,6 @@ SSCRT_ADDRESS = 'secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek'
 SSCRT_KEY = 'api_key_nE9AgouX7GVnT0+3LhAGoNmwUZ7HHRR4sUxNB+tbWW4='
 
 def main():
-  txLog = open(config[sys.argv[1]]["logLocation"], "a")
-  logWriter = csv.writer(txLog, delimiter=' ')
 
   botInfo = BotInfo(config[sys.argv[1]])
 
@@ -76,14 +74,13 @@ def main():
         )
       if( txResponse != ""):
         runningProfit += profit
-        txHandle(txResponse, profit, logWriter, runningProfit, lastHeight, optimumAmountSwapping)
+        txHandle(config[sys.argv[1]]["logLocation"], txResponse, profit, runningProfit, lastHeight, optimumAmountSwapping)
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
         botInfo.sequence = botInfo.wallet.sequence()
+      keepLooping = True #set to false for only one run
     except Exception as e:
       print( "ERROR in tx\n" )
       print( e )
       return
-  print( runningProfit )
-  txLog.close()
 
 main()

@@ -1,6 +1,7 @@
 import base64
 import time
 from datetime import datetime
+import csv
 import json
 from BotInfo import BotInfo
 from secret_sdk.client.lcd import LCDClient
@@ -194,19 +195,22 @@ def generateTxEncryptionKeys(client: LCDClient):
   txEncryptionKeyDict = {"first":client.utils.get_tx_encryption_key(nonceDict["first"]), "second":client.utils.get_tx_encryption_key(nonceDict["second"])}
   return nonceDict, txEncryptionKeyDict
 
-def txHandle(txResponse, profit, logWriter, runningProfit, lastHeight, amountSwapped):
+def txHandle(logLocation, txResponse, profit, runningProfit, lastHeight, amountSwapped):
   if(not txResponse):
     print( "ERROR - txResponse returned false" )
     return False
   
-  if(txResponse.is_tx_error()):
-    #logWriter.writerow([txResponse.to_json()])
-    logWriter.writerow([datetime.now(), "Error", txResponse.txhash, "height", lastHeight])
-    print(txResponse.txhash)
-    return False
+  with open(logLocation, mode="a") as csv_file:
+    logWriter = csv.writer(csv_file, delimiter=',')
 
-  #logWriter.writerow([txResponse.to_json()])
-  print(txResponse.to_json())
-  logWriter.writerow([datetime.now(), "profit", str(profit), "runningTotal", str(runningProfit), "txHash", txResponse.txhash, "height", lastHeight, "amount", amountSwapped])
+    if(txResponse.is_tx_error()):
+      #logWriter.writerow([txResponse.to_json()])
+      logWriter.writerow([datetime.now(), "Error", txResponse.txhash, "height", lastHeight])
+      print(txResponse.txhash)
+      return False
+
+    #logWriter.writerow([txResponse.to_json()])
+    print(txResponse.to_json())
+    logWriter.writerow([datetime.now(), str(profit), str(runningProfit), txResponse.txhash, lastHeight, amountSwapped])
 
   return True
