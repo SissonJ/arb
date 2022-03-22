@@ -29,8 +29,8 @@ config = {
     },
     "logLocation": "./logs/sscrt-shd-csv.csv",
     "fee": {
-      "gas": 160000,
-      "price": "040000uscrt",
+      "gas": 200000,
+      "price": "050000uscrt",
     },
   },
   "sscrt-sienna-config": {
@@ -61,8 +61,8 @@ config = {
     },
     "logLocation": "./logs/sscrt-sienna-csv.csv",
     "fee": {
-      "gas": 160000,
-      "price": "040000uscrt",
+      "gas": 200000,
+      "price": "050000uscrt",
     },
   },
   "sscrt-seth-config": {
@@ -93,8 +93,8 @@ config = {
     },
     "logLocation": "./logs/sscrt-seth-csv.csv",
     "fee": {
-      "gas": 170000,
-      "price": "042500uscrt",
+      "gas": 200000,
+      "price": "050000uscrt",
     },
   },
 }
