@@ -29,8 +29,8 @@ config = {
     },
     "logLocation": "./logs/sscrt-shd-csv.csv",
     "fee": {
-      "gas": 200001,
-      "price": "050001uscrt",
+      "gas": 160000,
+      "price": "040000uscrt",
     },
   },
   "sscrt-sienna-config": {

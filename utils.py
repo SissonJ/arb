@@ -66,6 +66,22 @@ def calculateProfitCP(s1t2, s1t1, s2t2, s2t1, amountSwapped, gasFeeScrt):
   profit = secondSwap - amountSwapped - gasFeeScrt
   return profit, firstSwap, secondSwap 
 
+def calculateProfit(s1t2, s1t1, s2t2, s2t1, minimumAmountToSwap, gasFeeScrt):
+  tempAmount = minimumAmountToSwap
+  firstSwap = secondSwap = amountToSwap = 0
+  maxProfit = -1000
+  while tempAmount < 101:
+    tempFirstSwap = constantProduct(s1t2, s1t1, tempAmount*.996)
+    tempSecondSwap = constantProduct(s2t1, s2t2, tempFirstSwap*.997) * .999
+    tempProfit = tempSecondSwap - tempAmount - gasFeeScrt
+    if tempProfit > maxProfit:
+      amountToSwap = tempAmount
+      firstSwap = tempFirstSwap
+      secondSwap = tempSecondSwap
+      maxProfit = tempProfit
+    tempAmount = tempAmount + 10
+  return amountToSwap, maxProfit, firstSwap, secondSwap
+
 def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
 
   stdSignMsg = StdSignMsg.from_data({
@@ -178,7 +194,7 @@ def generateTxEncryptionKeys(client: LCDClient):
   txEncryptionKeyDict = {"first":client.utils.get_tx_encryption_key(nonceDict["first"]), "second":client.utils.get_tx_encryption_key(nonceDict["second"])}
   return nonceDict, txEncryptionKeyDict
 
-def txHandle(txResponse, profit, logWriter, runningProfit, lastHeight):
+def txHandle(txResponse, profit, logWriter, runningProfit, lastHeight, amountSwapped):
   if(not txResponse):
     print( "ERROR - txResponse returned false" )
     return False
@@ -191,6 +207,6 @@ def txHandle(txResponse, profit, logWriter, runningProfit, lastHeight):
 
   #logWriter.writerow([txResponse.to_json()])
   print(txResponse.to_json())
-  logWriter.writerow([datetime.now(), "profit", str(profit), "runningTotal", str(runningProfit), "txHash", txResponse.txhash, "height", lastHeight])
+  logWriter.writerow([datetime.now(), "profit", str(profit), "runningTotal", str(runningProfit), "txHash", txResponse.txhash, "height", lastHeight, "amount", amountSwapped])
 
   return True
