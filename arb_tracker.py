@@ -28,8 +28,7 @@ def main():
       if( difference < 0 ):
         amountToSwap, profit, firstSwap, secondSwap = calculateProfit(siennat2, siennat1, sswapt2, sswapt1, amountSwapping, gasFeeScrt)
       if( profit != lastProfit[cfg]):
-        print(datetime.now(), "height", lastHeight)
-        print( cfg , "profit:", profit, "amount to swap", amountToSwap, sep="\t")
+        print(datetime.now(), "height", lastHeight, cfg , "profit:", profit, sep="\t")
         print()
         lastProfit[cfg] = profit
 
