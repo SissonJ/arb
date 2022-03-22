@@ -210,7 +210,7 @@ def txHandle(logLocation, txResponse, profit, runningProfit, lastHeight, amountS
       return False
 
     #logWriter.writerow([txResponse.to_json()])
-    print(txResponse.to_json())
+    print("Success!")
     logWriter.writerow([datetime.now(), str(profit), str(runningProfit), txResponse.txhash, lastHeight, amountSwapped])
 
   return True
