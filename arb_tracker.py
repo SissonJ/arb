@@ -30,6 +30,7 @@ def main():
       if( profit != lastProfit[cfg]):
         print(datetime.now(), "height", lastHeight)
         print( cfg , "profit:", profit, "amount to swap", amountToSwap, sep="\t")
+        print()
         lastProfit[cfg] = profit
 
 main()

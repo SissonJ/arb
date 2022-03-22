@@ -128,9 +128,9 @@ def swapSienna(
     txEncryptionKeyDict,
   ):
 
-  sscrtBalStr = str(int(sscrtBal * 10 ** 6))
-  firstSwapStr = str(int(firstSwap * 10 ** 8))
-  secondSwapStr = str(int(secondSwap * 10 ** 6))
+  sscrtBalStr = str(int(sscrtBal * 10 ** botInfo.tokenDecimals["token1"]))
+  firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
+  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
 
   msgExecuteSienna = createMsgExecuteSienna(
     botInfo, 
@@ -163,9 +163,9 @@ def swapSswap(
     txEncryptionKeyDict,
   ):
 
-  sscrtBalStr = str(int(sscrtBal * 10 ** 6))
-  firstSwapStr = str(int(firstSwap * 10 ** 8))
-  secondSwapStr = str(int(secondSwap * 10 ** 6))
+  sscrtBalStr = str(int(sscrtBal * 10 ** botInfo.tokenDecimals["token1"]))
+  firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
+  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
 
   msgExecuteSswap = createMsgExecuteSswap(
     botInfo, 
