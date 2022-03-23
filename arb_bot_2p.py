@@ -4,10 +4,7 @@ import sys
 
 from BotInfo import BotInfo
 from config import config
-from utils import generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio, calculateProfit, swapSienna, swapSswap, txHandle
-
-SSCRT_ADDRESS = 'secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek'
-SSCRT_KEY = 'api_key_nE9AgouX7GVnT0+3LhAGoNmwUZ7HHRR4sUxNB+tbWW4='
+from utils import generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio, calculateProfit, swapSienna, swapSswap, recordTx
 
 def main():
 
@@ -20,21 +17,20 @@ def main():
   txResponse = ""
   runningProfit = 0
   minAmountSwapping = 40 #sscrt
-  maxAmountSwapping = 100
+  maxAmountSwapping = 500
   optimumAmountSwapping = 0
   height = 0
   lastHeight = 0
   lastProfit = 0
   gasFeeScrt = int(botInfo.fee.to_data()["gas"])/4000000 + .00027
+  scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
   print("Starting loop", sys.argv[1])
   while keepLooping:
     try:
       height = sync_next_block(botInfo.client, lastHeight)
       txResponse = ""
       lastSscrtBal = sscrtBal
-      #scrtBal, sscrtBal, shdBal = getBalances(scrtBal, sscrtBal, shdBal)
-      scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
-      checkScrtBal(botInfo, scrtBal, maxAmountSwapping)
+      checkScrtBal(botInfo, scrtBal, maxAmountSwapping, config[sys.argv[1]]["logLocation"])
       siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo)
       sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo)
     except Exception as e:
@@ -73,14 +69,20 @@ def main():
           txEncryptionKeyDict,
         )
       if( txResponse != ""):
-        runningProfit += profit
-        txHandle(config[sys.argv[1]]["logLocation"], txResponse, profit, runningProfit, lastHeight, optimumAmountSwapping)
+        if(not txResponse or txResponse.is_tx_error()):
+          print(datetime.now(), "Failed")
+        else:
+          runningProfit += profit
+          print(datetime.now(), "Success! Running profit:", runningProfit)
+        recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping)
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
         botInfo.sequence = botInfo.wallet.sequence()
+        scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       keepLooping = True #set to false for only one run
     except Exception as e:
       print( "ERROR in tx\n" )
       print( e )
+      scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       return
 
 main()

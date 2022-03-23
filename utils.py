@@ -1,13 +1,20 @@
 import base64
 import time
-from datetime import datetime
 import csv
 import json
+import requests
+from datetime import datetime
+
 from BotInfo import BotInfo
+from config import config
+
 from secret_sdk.client.lcd import LCDClient
 from secret_sdk.core.auth.data.tx import StdSignMsg
 from secret_sdk.key.mnemonic import MnemonicKey
 from secret_sdk.client.lcd.wallet import Wallet
+
+SSCRT_ADDRESS = config["SSCRT_ADDRESS"]
+SSCRT_KEY = config["SSCRT_KEY"]
 
 def block_height(client:LCDClient):
   block_info = client.tendermint.block_info()
@@ -21,18 +28,28 @@ def sync_next_block(client:LCDClient, height=0):
       return new_height
     time.sleep(.5)
 
-def buyScrt(botInfo: BotInfo, scrtBal):
+def buyScrt(botInfo: BotInfo, scrtBal, logLocation):
   global SSCRT_ADDRESS, SSCRT_KEY
   sscrtBalRes = botInfo.client.wasm.contract_query(SSCRT_ADDRESS, { "balance": { "address": botInfo.accAddr, "key": SSCRT_KEY }})
   redeemAmount = int(sscrtBalRes['balance']['amount']) - scrtBal * 10 ** 6
+  if( redeemAmount > 50 ):
+    redeemAmount = 50
   handleMsg = {"redeem":{"amount":str(redeemAmount)}}
   res = botInfo.wallet.execute_tx(SSCRT_ADDRESS, handleMsg)
-  return res
 
-def checkScrtBal(botInfo: BotInfo, scrtBal, tradeAmount):
+  res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=secret&vs_currencies=usd")
+  data = res.json()
+
+  with open(logLocation, mode="a") as csv_file:
+    logWriter = csv.writer(csv_file, delimiter=',')
+    logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, (int(sscrtBalRes['balance']['amount']) - scrtBal * 10 ** 6) - redeemAmount, "Bought scrt with sscrt for gas"])
+  
+  return
+
+def checkScrtBal(botInfo: BotInfo, scrtBal, tradeAmount, logLocation):
   if (scrtBal < 1 ):
     print("NOT ENOUGH SCRT")
-    buyScrt(botInfo, tradeAmount)
+    buyScrt(botInfo, tradeAmount, logLocation)
     return 
   return
 
@@ -71,7 +88,7 @@ def calculateProfit(s1t2, s1t1, s2t2, s2t1, minimumAmountToSwap, gasFeeScrt):
   tempAmount = minimumAmountToSwap
   firstSwap = secondSwap = amountToSwap = 0
   maxProfit = -1000
-  while tempAmount < 101:
+  while tempAmount < 501:
     tempFirstSwap = constantProduct(s1t2, s1t1, tempAmount*.996)
     tempSecondSwap = constantProduct(s2t1, s2t2, tempFirstSwap*.997) * .999
     tempProfit = tempSecondSwap - tempAmount - gasFeeScrt
@@ -80,7 +97,10 @@ def calculateProfit(s1t2, s1t1, s2t2, s2t1, minimumAmountToSwap, gasFeeScrt):
       firstSwap = tempFirstSwap
       secondSwap = tempSecondSwap
       maxProfit = tempProfit
-    tempAmount = tempAmount + 10
+    if(tempAmount < 101):
+      tempAmount = tempAmount + 10
+    else:
+      tempAmount = tempAmount + 50
   return amountToSwap, maxProfit, firstSwap, secondSwap
 
 def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
@@ -214,3 +234,28 @@ def txHandle(logLocation, txResponse, profit, runningProfit, lastHeight, amountS
     logWriter.writerow([datetime.now(), str(profit), str(runningProfit), txResponse.txhash, lastHeight, amountSwapped])
 
   return True
+
+def recordTx(botInfo: BotInfo, logLocation, amountSwapped):
+  scrtBal, t1Bal, t2Bal = getBalances(botInfo)
+  res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=secret&vs_currencies=usd")
+  data = res.json()
+
+  with open(logLocation, mode="a") as csv_file:
+    logWriter = csv.writer(csv_file, delimiter=',')
+    logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, t1Bal, t2Bal, amountSwapped])
+
+
+def getBalances(botInfo: BotInfo):
+  scrtBalRes = botInfo.client.bank.balance(botInfo.accAddr)
+  t1BalRes = botInfo.client.wasm.contract_query(
+    botInfo.tokenContractAddresses["token1"], 
+    { "balance": { "address": botInfo.accAddr, "key": botInfo.tokenKeys["token1"] }}
+  )
+  t2BalRes = botInfo.client.wasm.contract_query(
+    botInfo.tokenContractAddresses["token2"], 
+    { "balance": { "address": botInfo.accAddr, "key": botInfo.tokenKeys["token2"] }}
+  )
+  scrtBal = int(scrtBalRes.to_data()[0]["amount"]) * 10**-6
+  t1Bal = float(t1BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token1"]
+  t2Bal = float(t2BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token1"]
+  return scrtBal, t1Bal, t2Bal

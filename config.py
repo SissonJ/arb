@@ -1,6 +1,8 @@
 from env import mkSeed, endpoint
 
 config = {
+  "SSCRT_ADDRESS": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek",
+  "SSCRT_KEY": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=",  
   "sscrt-shd-config": {
     "mkSeed": mkSeed,
     "pairAddrs": {
@@ -18,6 +20,10 @@ config = {
     "tokenAddrs": {
       "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
       "token2": "secret1qfql357amn448duf5gvp9gr48sxx9tsnhupu3d", #SHD_ADDRESS
+    },
+    "tokenKeys":{
+      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
+      "token2": "api_key_dbViT6Q9NycWc04tJ8DaylmO1BWGcWz8rJixY3/ZQnY=", #SHD_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,
@@ -51,6 +57,10 @@ config = {
       "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
       "token2": "secret1rgm2m5t530tdzyd99775n6vzumxa5luxcllml4", #SIENNA_ADDRESS
     },
+    "tokenKeys":{
+      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
+      "token2": "api_key_IiGUpxiB9+hry8VNpAx+6C9x72Tz1KEkhvAWtpLQUUU=", #SIENNA_API_KEY
+    },
     "tokenDecimals":{
       "token1": 6,
       "token2": 18,
@@ -82,6 +92,10 @@ config = {
     "tokenAddrs": {
       "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
       "token2": "secret1wuzzjsdhthpvuyeeyhfq2ftsn3mvwf9rxy6ykw", #SETH_ADDRESS
+    },
+    "tokenKeys":{
+      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
+      "token2": "api_key_tfA3AUYa/EH5mk0cIv7WqmYlz4VZktu7HiBUXW1HbrU=", #SETH_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,

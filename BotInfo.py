@@ -14,6 +14,7 @@ class BotInfo:
   pairToken1First: Dict[bool, bool]
   tokenContractAddresses: Dict[str, str]
   tokenContractHashes: Dict[str, str] #client.wasm.contract_hash(botConfig["tokenAddrs"]["token1"])
+  tokenKeys: Dict[str, str]
   tokenDecimals: Dict[int, int]
   fee: StdFee #(botConfig["fee"]["gas"], botConfig["fee"]["price"])
   accountNum: int #wallet.account_number(),
@@ -32,6 +33,7 @@ class BotInfo:
       "token1": self.client.wasm.contract_hash(botConfig["tokenAddrs"]["token1"]),
       "token2": self.client.wasm.contract_hash(botConfig["tokenAddrs"]["token2"]),
     }
+    self.tokenKeys = botConfig["tokenKeys"]
     self.tokenDecimals = botConfig["tokenDecimals"]
     self.fee = StdFee(botConfig["fee"]["gas"], botConfig["fee"]["price"])
     self.accountNum = self.wallet.account_number()
