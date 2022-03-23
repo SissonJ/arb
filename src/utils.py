@@ -90,7 +90,7 @@ def calculateProfit(s1t2, s1t1, s2t2, s2t1, minimumAmountToSwap, gasFeeScrt):
   maxProfit = -1000
   while tempAmount < 501:
     tempFirstSwap = constantProduct(s1t2, s1t1, tempAmount*.996)
-    tempSecondSwap = constantProduct(s2t1, s2t2, tempFirstSwap*.997) * .999
+    tempSecondSwap = constantProduct(s2t1, s2t2, tempFirstSwap*.997)
     tempProfit = tempSecondSwap - tempAmount - gasFeeScrt
     if tempProfit > maxProfit:
       amountToSwap = tempAmount
