@@ -1,7 +1,9 @@
 from datetime import datetime
-from BotInfo import BotInfo
 from secret_sdk.client.lcd.lcdclient import LCDClient
+
 from config import config
+
+from BotInfo import BotInfo
 from env import endpoint
 from utils import getSSwapRatio, getSiennaRatio, calculateProfit, sync_next_block
 
@@ -31,7 +33,7 @@ def main():
         amountToSwap, profit, firstSwap, secondSwap = calculateProfit(siennat2, siennat1, sswapt2, sswapt1, amountSwapping, gasFeeScrt)
         printval1, printval2, printval3, printval4 = siennat2, siennat1, sswapt2, sswapt1
       if( profit != lastProfit[cfg]):
-        print(printval1, printval2, printval3, printval4, amountSwapping)
+        print(printval1, printval2, printval3, printval4, amountToSwap)
         print(datetime.now(), "height", lastHeight, cfg , "profit:", profit, sep="\t")
         print("sswap:", s1ratio, "sienna", s2ratio )
         print()

@@ -36,6 +36,7 @@ class BotInfo:
     self.tokenKeys = botConfig["tokenKeys"]
     self.tokenDecimals = botConfig["tokenDecimals"]
     self.fee = StdFee(botConfig["fee"]["gas"], botConfig["fee"]["price"])
-    self.accountNum = self.wallet.account_number()
-    self.sequence = self.wallet.sequence()
+    res = self.client.auth.account_info(self.wallet.key.acc_address)
+    self.accountNum = res.account_number
+    self.sequence = res.sequence
     

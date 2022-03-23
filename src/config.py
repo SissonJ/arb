@@ -36,7 +36,7 @@ config = {
       "endpoint": endpoint,
       "chainID": "secret-4"
     },
-    "logLocation": "./logs/sscrt-shd-csv.csv",
+    "logLocation": "./../logs/sscrt-shd-csv.csv",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",
@@ -72,7 +72,7 @@ config = {
       "endpoint": endpoint,
       "chainID": "secret-4"
     },
-    "logLocation": "./logs/sscrt-sienna-csv.csv",
+    "logLocation": "./../logs/sscrt-sienna-csv.csv",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",
@@ -108,7 +108,7 @@ config = {
       "endpoint": endpoint,
       "chainID": "secret-4"
     },
-    "logLocation": "./logs/sscrt-seth-csv.csv",
+    "logLocation": "./../logs/sscrt-seth-csv.csv",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",

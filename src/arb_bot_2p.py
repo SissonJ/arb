@@ -1,10 +1,10 @@
-import csv
 from datetime import datetime
 import sys
 
 from BotInfo import BotInfo
 from config import config
-from utils import generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio, calculateProfit, swapSienna, swapSswap, recordTx
+from utils import generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio 
+from utils import calculateProfit, swapSienna, swapSswap, recordTx
 
 def main():
 
