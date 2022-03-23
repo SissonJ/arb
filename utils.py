@@ -40,7 +40,7 @@ def buyScrt(botInfo: BotInfo, scrtBal, logLocation):
   res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=secret&vs_currencies=usd")
   data = res.json()
 
-  with open(logLocation, mode="a") as csv_file:
+  with open(logLocation, mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
     logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, (int(sscrtBalRes['balance']['amount']) - scrtBal * 10 ** 6) - redeemAmount, "Bought scrt with sscrt for gas"])
   
@@ -97,7 +97,7 @@ def calculateProfit(s1t2, s1t1, s2t2, s2t1, minimumAmountToSwap, gasFeeScrt):
       firstSwap = tempFirstSwap
       secondSwap = tempSecondSwap
       maxProfit = tempProfit
-    if(tempAmount < 101):
+    if(tempAmount < 100):
       tempAmount = tempAmount + 10
     else:
       tempAmount = tempAmount + 50
@@ -240,7 +240,7 @@ def recordTx(botInfo: BotInfo, logLocation, amountSwapped):
   res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=secret&vs_currencies=usd")
   data = res.json()
 
-  with open(logLocation, mode="a") as csv_file:
+  with open(logLocation, mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
     logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, t1Bal, t2Bal, amountSwapped])
 

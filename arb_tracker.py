@@ -23,13 +23,17 @@ def main():
       s2ratio, siennat1, siennat2 = getSiennaRatio(botInfo)
       difference = s2ratio - s1ratio
       profit= firstSwap = secondSwap = amountToSwap = 0
+      printval1, printval2, printval3, printval4 = 0, 0, 0, 0
       if( difference > 0 ):
         amountToSwap, profit, firstSwap, secondSwap = calculateProfit(sswapt2, sswapt1, siennat2, siennat1, amountSwapping, gasFeeScrt)
+        printval1, printval2, printval3, printval4 = sswapt2, sswapt1, siennat2, siennat1
       if( difference < 0 ):
         amountToSwap, profit, firstSwap, secondSwap = calculateProfit(siennat2, siennat1, sswapt2, sswapt1, amountSwapping, gasFeeScrt)
+        printval1, printval2, printval3, printval4 = siennat2, siennat1, sswapt2, sswapt1
       if( profit != lastProfit[cfg]):
+        print(printval1, printval2, printval3, printval4, amountSwapping)
         print(datetime.now(), "height", lastHeight, cfg , "profit:", profit, sep="\t")
-        print("sswap:", s1ratio, "sienna", s2ratio)
+        print("sswap:", s1ratio, "sienna", s2ratio )
         print()
         lastProfit[cfg] = profit
 
