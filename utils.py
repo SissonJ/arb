@@ -6,15 +6,15 @@ import requests
 from datetime import datetime
 
 from BotInfo import BotInfo
-from config import config
+from config import sscrtAdresses
 
 from secret_sdk.client.lcd import LCDClient
 from secret_sdk.core.auth.data.tx import StdSignMsg
 from secret_sdk.key.mnemonic import MnemonicKey
 from secret_sdk.client.lcd.wallet import Wallet
 
-SSCRT_ADDRESS = config["SSCRT_ADDRESS"]
-SSCRT_KEY = config["SSCRT_KEY"]
+SSCRT_ADDRESS = sscrtAdresses["SSCRT_ADDRESS"]
+SSCRT_KEY = sscrtAdresses["SSCRT_KEY"]
 
 def block_height(client:LCDClient):
   block_info = client.tendermint.block_info()
@@ -257,5 +257,5 @@ def getBalances(botInfo: BotInfo):
   )
   scrtBal = int(scrtBalRes.to_data()[0]["amount"]) * 10**-6
   t1Bal = float(t1BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token1"]
-  t2Bal = float(t2BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token1"]
+  t2Bal = float(t2BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token2"]
   return scrtBal, t1Bal, t2Bal

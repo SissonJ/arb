@@ -1,8 +1,11 @@
 from env import mkSeed, endpoint
 
-config = {
+sscrtAdresses = {
   "SSCRT_ADDRESS": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek",
-  "SSCRT_KEY": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=",  
+  "SSCRT_KEY": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU="
+}
+
+config = {  
   "sscrt-shd-config": {
     "mkSeed": mkSeed,
     "pairAddrs": {
