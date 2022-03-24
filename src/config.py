@@ -1,4 +1,4 @@
-from env import mkSeed, endpoint
+from env import mkSeed, endpoint, testnet
 
 sscrtAdresses = {
   "SSCRT_ADDRESS": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek",
@@ -114,4 +114,43 @@ config = {
       "price": "050001uscrt",
     },
   },
+}
+
+configStdk = {
+    #"sscrt-stdk-config": {
+    "mkSeed": mkSeed,
+    "pairAddrs": {
+      "pair1": "TEMP", #SSWAP_SSCRT_STKD_PAIR
+      "pair2": "secret1pz76z6dfekq2pcnymmz68dtwu7qtuh6s0ppf7z", #STKD_CONTRACT
+    },
+    "pairQueries": {
+      "pair1": { 'pool': {} }, #SSWAP_QUERY
+      "pair2": 'pair_info', #SIENNA_QUERY
+    },
+    "token1First": {
+      "pair1": True,
+      "pair2": True,
+    },
+    "tokenAddrs": {
+      "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
+      "token2": "secret1pz76z6dfekq2pcnymmz68dtwu7qtuh6s0ppf7z", #STKD_CONTRACT
+    },
+    "tokenKeys":{
+      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
+      "token2": "TEMP", #STKD_API_KEY
+    },
+    "tokenDecimals":{
+      "token1": 6,
+      "token2": 6,
+    },
+    "clientInfo": {
+      "endpoint": testnet,
+      "chainID": "pulsar-2"
+    },
+    "logLocation": "./../logs/sscrt-stkd-csv.csv",
+    "fee": {
+      "gas": 200001,
+      "price": "050001uscrt",
+    },
+  #},
 }

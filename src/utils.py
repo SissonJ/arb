@@ -2,6 +2,7 @@ import base64
 import time
 import csv
 import json
+from typing import Dict
 import requests
 from datetime import datetime
 
@@ -10,6 +11,7 @@ from config import sscrtAdresses
 
 from secret_sdk.client.lcd import LCDClient
 from secret_sdk.core.auth.data.tx import StdSignMsg
+from secret_sdk.core.coins import Coins
 from secret_sdk.key.mnemonic import MnemonicKey
 from secret_sdk.client.lcd.wallet import Wallet
 
@@ -73,6 +75,14 @@ def getSiennaRatio(botInfo: BotInfo):
     token2Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token2"]
   return token1Amount/token2Amount, token1Amount, token2Amount
 
+def getStkdPrice(botInfo: BotInfo):
+  print(botInfo.tokenContractAddresses["token2"])
+  res = botInfo.client.wasm.contract_query(
+    botInfo.tokenContractAddresses["token2"], 
+    { "staking_info": { "time": round(time.time()) } }
+  )
+  return float(res["staking_info"]["price"])*10**-6
+
 def constantProduct(poolBuy, poolSell, x):
   out = -(poolBuy * poolSell)/(poolSell + x) + poolBuy
   return out
@@ -89,8 +99,29 @@ def calculateProfit(s1t2, s1t1, s2t2, s2t1, minimumAmountToSwap, gasFeeScrt):
   firstSwap = secondSwap = amountToSwap = 0
   maxProfit = -1000
   while tempAmount < 501:
-    tempFirstSwap = constantProduct(s1t2, s1t1, tempAmount*.996)
-    tempSecondSwap = constantProduct(s2t1, s2t2, tempFirstSwap*.997)
+    tempFirstSwap = constantProduct(s1t2, s1t1, tempAmount*.9969)
+    tempSecondSwap = constantProduct(s2t1, s2t2, tempFirstSwap*.997) * .9999
+    tempProfit = tempSecondSwap - tempAmount - gasFeeScrt
+    if tempProfit > maxProfit:
+      amountToSwap = tempAmount
+      firstSwap = tempFirstSwap
+      secondSwap = tempSecondSwap
+      maxProfit = tempProfit
+    if(tempAmount < 100):
+      tempAmount = tempAmount + 10
+    else:
+      tempAmount = tempAmount + 50
+  return amountToSwap, maxProfit, firstSwap, secondSwap
+
+def calculateProfitStdk(botInfo: BotInfo, minimumSwapAmount, gasFeeScrt):
+  ratio, s1t1, s1t2 = getSiennaRatio(botInfo)
+  skdtPrice = getStkdPrice(botInfo)
+  tempAmount = minimumSwapAmount
+  firstSwap = secondSwap = amountToSwap = 0
+  maxProfit = -1000
+  while tempAmount < 501:
+    tempFirstSwap = constantProduct(s1t2, s1t1, tempAmount*.9969)
+    tempSecondSwap = skdtPrice * tempFirstSwap * .985
     tempProfit = tempSecondSwap - tempAmount - gasFeeScrt
     if tempProfit > maxProfit:
       amountToSwap = tempAmount
@@ -139,7 +170,6 @@ def createMsgExecuteSienna(botInfo: BotInfo, expectedReturn, amountToSwap, contr
   msgExecuteSienna = botInfo.client.wasm.contract_execute_msg(botInfo.accAddr, contractAddr, handleMsgSienna, [], contractHash, nonce, txEncryptionKey)
   return msgExecuteSienna
 
-
 def swapSienna(
     botInfo: BotInfo,
     sscrtBal, 
@@ -150,8 +180,9 @@ def swapSienna(
   ):
 
   sscrtBalStr = str(int(sscrtBal * 10 ** botInfo.tokenDecimals["token1"]))
-  firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
-  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
+  firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"])-1)
+  firstMinExpected = str(int(firstSwapStr)-1)
+  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"])-1)
 
   msgExecuteSienna = createMsgExecuteSienna(
     botInfo, 
@@ -185,8 +216,9 @@ def swapSswap(
   ):
 
   sscrtBalStr = str(int(sscrtBal * 10 ** botInfo.tokenDecimals["token1"]))
-  firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
-  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
+  firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]-1))
+  firstMinExpected = str(int(int(firstSwapStr) * .999))
+  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]-1))
 
   msgExecuteSswap = createMsgExecuteSswap(
     botInfo, 
@@ -209,6 +241,42 @@ def swapSswap(
   )
 
   return broadcastTx(botInfo, msgExecuteSswap, msgExecuteSienna)
+
+def swapStkd(
+    botInfo: BotInfo,
+    stkdBal, 
+    firstSwap, 
+    secondSwap, 
+    nonceDict, 
+    txEncryptionKeyDict,
+  ):
+
+  stkdBalStr = str(int(stkdBal * 10 ** botInfo.tokenDecimals["token1"]))
+  firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
+  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
+
+  msgExecuteSienna = createMsgExecuteSienna(
+    botInfo,
+    firstSwapStr,
+    stkdBalStr,
+    botInfo.tokenContractAddresses["sscrt"],
+    botInfo.tokenContractHashes["sscrt"],
+    nonceDict["first"],
+    txEncryptionKeyDict["first"]
+  )
+
+  msgExecuteStdk = botInfo.client.wasm.contract_execute_msg(
+    botInfo.accAddr, 
+    botInfo.tokenContractAddresses["stdk"], 
+    json.dumps({"stake": {}}), 
+    [{"amount": firstSwapStr, "denom": "uscrt"}], 
+    botInfo.tokenContractHashes["stdk"], 
+    nonceDict["second"],
+    txEncryptionKeyDict["second"]
+  )
+  
+  return broadcastTx(botInfo, msgExecuteSienna, msgExecuteStdk)
+  
 
 def generateTxEncryptionKeys(client: LCDClient):
   nonceDict = {"first":client.utils.generate_new_seed(), "second":client.utils.generate_new_seed()}
