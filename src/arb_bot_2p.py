@@ -31,9 +31,9 @@ def main():
       height = sync_next_block(botInfo.client, lastHeight)
       txResponse = ""
       lastSscrtBal = sscrtBal
-      checkScrtBal(botInfo, scrtBal, maxAmountSwapping, config[sys.argv[1]]["logLocation"])
-      sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo, nonceDictPair["first"], txEncryptionKeyDictPair["second"])
-      siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo, nonceDictPair["first"], txEncryptionKeyDictPair["second"])
+      #checkScrtBal(botInfo, scrtBal, maxAmountSwapping, config[sys.argv[1]]["logLocation"])
+      sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo, nonceDictPair["first"], txEncryptionKeyDictPair["first"])
+      siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo, nonceDictPair["second"], txEncryptionKeyDictPair["second"])
     except Exception as e:
       print( e )
     try:

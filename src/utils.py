@@ -2,7 +2,8 @@ import base64
 import time
 import csv
 import json
-from typing import Dict
+from typing import Dict, Optional
+from pandas import option_context
 import requests
 from datetime import datetime
 
@@ -55,7 +56,7 @@ def checkScrtBal(botInfo: BotInfo, scrtBal, tradeAmount, logLocation):
     return 
   return
 
-def getSSwapRatio(botInfo: BotInfo, nonce, tx_encryption_key):
+def getSSwapRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
   sswapInfo = botInfo.client.wasm.contract_query(
     botInfo.pairContractAddresses["pair1"], 
     botInfo.pairContractQueries["pair1"], 
@@ -71,7 +72,7 @@ def getSSwapRatio(botInfo: BotInfo, nonce, tx_encryption_key):
     token2Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token2"]
   return token1Amount/token2Amount, token1Amount, token2Amount
 
-def getSiennaRatio(botInfo: BotInfo, nonce, tx_encryption_key):
+def getSiennaRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
   siennaInfo = botInfo.client.wasm.contract_query(
     botInfo.pairContractAddresses["pair2"], 
     botInfo.pairContractQueries["pair2"], 
