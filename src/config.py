@@ -114,6 +114,78 @@ config = {
       "price": "050001uscrt",
     },
   },
+  "sscrt-swbtc-config": {
+    "mkSeed": mkSeed,
+    "pairAddrs": {
+      "pair1": "secret10x0k62eaal4q3t9c200qvmgftahxjqvdawn69c", #SSWAP_SSCRT_SWBTC_PAIR
+      "pair2": "secret15cje8he9lazke3w7flqm2efse4p5fdjrjarv52", #SIENNA_SSCRT_SWBTC_PAIR
+    },
+    "pairQueries": {
+      "pair1": { 'pool': {} }, #SSWAP_QUERY
+      "pair2": 'pair_info', #SIENNA_QUERY
+    },
+    "token1First": {
+      "pair1": True,
+      "pair2": True,
+    },
+    "tokenAddrs": {
+      "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
+      "token2": "secret1g7jfnxmxkjgqdts9wlmn238mrzxz5r92zwqv4a", #SWBTC_ADDRESS
+    },
+    "tokenKeys":{
+      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
+      "token2": "api_key_c5NVcP5dQ1E5sZF6oJh75uYFs/FiZJKBgY8jIpXrZ+s=", #SWBTC_API_KEY
+    },
+    "tokenDecimals":{
+      "token1": 6,
+      "token2": 8,
+    },
+    "clientInfo": {
+      "endpoint": endpoint,
+      "chainID": "secret-4"
+    },
+    "logLocation": "./../logs/sscrt-swbtc-csv.csv",
+    "fee": {
+      "gas": 200001,
+      "price": "050001uscrt",
+    },
+  },
+  "sscrt-sxmr-config": {
+    "mkSeed": mkSeed,
+    "pairAddrs": {
+      "pair1": "secret1rtgz90f7umulrg3a574p9n6d9hzcxmxqwdk9hj", #SSWAP_SXMR_SETH_PAIR
+      "pair2": "secret10jr88entzckef4dxdk6pm8fpa09k87yzt0cwxd", #SIENNA_SXMR_SETH_PAIR
+    },
+    "pairQueries": {
+      "pair1": { 'pool': {} }, #SSWAP_QUERY
+      "pair2": 'pair_info', #SIENNA_QUERY
+    },
+    "token1First": {
+      "pair1": False,
+      "pair2": False,
+    },
+    "tokenAddrs": {
+      "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
+      "token2": "secret19ungtd2c7srftqdwgq0dspwvrw63dhu79qxv88", #SXMR_ADDRESS
+    },
+    "tokenKeys":{
+      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
+      "token2": "api_key_tXggdXqRd4Bq06tQdLrq3EDeQJCdKVm56ciGjusX6ik=", #SXMR_API_KEY
+    },
+    "tokenDecimals":{
+      "token1": 6,
+      "token2": 12,
+    },
+    "clientInfo": {
+      "endpoint": endpoint,
+      "chainID": "secret-4"
+    },
+    "logLocation": "./../logs/sscrt-seth-csv.csv",
+    "fee": {
+      "gas": 200001,
+      "price": "050001uscrt",
+    },
+  },
 }
 
 configStdk = {
