@@ -79,7 +79,7 @@ def main():
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
         botInfo.sequence = botInfo.wallet.sequence()
         scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
-      nonceDictPair, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
+      nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
       keepLooping = True #set to false for only one run
     except Exception as e:
       print( "ERROR in tx\n" )
