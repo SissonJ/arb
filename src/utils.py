@@ -3,7 +3,6 @@ import time
 import csv
 import json
 from typing import Dict, Optional
-from pandas import option_context
 import requests
 from datetime import datetime
 
