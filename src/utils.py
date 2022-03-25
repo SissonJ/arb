@@ -316,14 +316,14 @@ def txHandle(logLocation, txResponse, profit, runningProfit, lastHeight, amountS
 
   return True
 
-def recordTx(botInfo: BotInfo, logLocation, amountSwapped):
+def recordTx(botInfo: BotInfo, logLocation, amountSwapped, ratio):
   scrtBal, t1Bal, t2Bal = getBalances(botInfo)
   res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=secret&vs_currencies=usd")
   data = res.json()
 
   with open(logLocation, mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
-    logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, t1Bal, t2Bal, amountSwapped])
+    logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped])
 
 
 def getBalances(botInfo: BotInfo):

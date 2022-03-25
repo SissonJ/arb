@@ -75,7 +75,7 @@ def main():
         else:
           runningProfit += profit
           print(datetime.now(), "Success! Running profit:", runningProfit)
-        recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping)
+        recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
         botInfo.sequence = botInfo.wallet.sequence()
         scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
