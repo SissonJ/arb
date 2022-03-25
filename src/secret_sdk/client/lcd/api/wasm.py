@@ -84,7 +84,13 @@ class AsyncWasmAPI(BaseAsyncAPI):
         return _contract_code_hash[contract_address]
 
     async def contract_query(
-        self, contract_address: str, query: dict, height: Optional[int] = 0
+        self, 
+        contract_address: str, 
+        query: dict, 
+        contract_code_hash: Optional[str] = "",
+        nonce: Optional[int]=0, 
+        tx_encryption_key: Optional[str]="",
+        height: Optional[int] = 0, 
     ) -> Any:
         """Runs a QueryMsg on a contract.
 
@@ -96,12 +102,18 @@ class AsyncWasmAPI(BaseAsyncAPI):
             Any: results of query
         """
         query_str = json.dumps(query, separators=(",", ":"))
-        contract_code_hash = await BaseAsyncAPI._try_await(
-            self.contract_hash(contract_address)
-        )
-        encrypted = await BaseAsyncAPI._try_await(
-            self._c.utils.encrypt(contract_code_hash, query_str)
-        )
+        if(contract_code_hash == ""):
+            contract_code_hash = await BaseAsyncAPI._try_await(
+                self.contract_hash(contract_address)
+            )
+        if(nonce == 0 and tx_encryption_key == ""):
+            encrypted = await BaseAsyncAPI._try_await(
+                self._c.utils.encrypt(contract_code_hash, query_str)
+            )
+        else:
+            encrypted = await BaseAsyncAPI._try_await(
+                self._c.utils.encrypt(contract_code_hash, query_str, nonce, tx_encryption_key)
+            )
 
         nonce = encrypted[0:32]
         encoded = base64.b64encode(bytes(encrypted)).hex()
@@ -110,7 +122,7 @@ class AsyncWasmAPI(BaseAsyncAPI):
         query_result = await BaseAsyncAPI._try_await(self._c._get(query_path))
         encoded_result = base64.b64decode(bytes(query_result["smart"], "utf-8"))
         decrypted = await BaseAsyncAPI._try_await(
-            self._c.utils.decrypt(encoded_result, nonce)
+            self._c.utils.decrypt(encoded_result, nonce, tx_encryption_key)
         )
         return json.loads(base64.b64decode(decrypted))
 
@@ -178,7 +190,12 @@ class WasmAPI(AsyncWasmAPI):
 
     @sync_bind(AsyncWasmAPI.contract_query)
     def contract_query(
-        self, contract_address: str, query_msg: dict, height: Optional[int] = 0
+        self, 
+        contract_address: str, query_msg: dict, 
+        height: Optional[int] = 0,
+        contract_code_hash: Optional[str] = "",
+        nonce: Optional[int]=0, 
+        tx_encryption_key: Optional[str]="",
     ) -> Any:
         pass
 

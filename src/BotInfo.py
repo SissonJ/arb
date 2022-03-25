@@ -11,6 +11,7 @@ class BotInfo:
   accAddr: str
   pairContractAddresses: Dict[str, str]
   pairContractQueries: Dict[Any, Any]
+  pairContractHash: Dict[Any, Any]
   pairToken1First: Dict[bool, bool]
   tokenContractAddresses: Dict[str, str]
   tokenContractHashes: Dict[str, str] #client.wasm.contract_hash(botConfig["tokenAddrs"]["token1"])
@@ -27,6 +28,11 @@ class BotInfo:
     self.accAddr = self.wallet.key.acc_address
     self.pairContractAddresses = botConfig["pairAddrs"]
     self.pairContractQueries = botConfig["pairQueries"]
+    self.pairContractHash = {
+      "pair1": self.client.wasm.contract_hash(self.pairContractAddresses["pair1"]),
+      "pair2": self.client.wasm.contract_hash(self.pairContractAddresses["pair2"]),
+
+    }
     self.pairToken1First = botConfig["token1First"]
     self.tokenContractAddresses = botConfig["tokenAddrs"]
     self.tokenContractHashes = {

@@ -151,13 +151,19 @@ class AsyncLCDUtils(BaseAsyncAPI):
 
         return nonce + [x for x in key_dump] + [x for x in ciphertext]
 
-    async def decrypt(self, ciphertext: bytes, nonce: List[int]) -> bytes:
+    async def decrypt(
+        self, 
+        ciphertext: bytes, 
+        nonce: List[int], 
+        tx_encryption_key: Optional[str] = "",
+    ) -> bytes:
         if not ciphertext:
             return bytes([])
 
-        tx_encryption_key = await BaseAsyncAPI._try_await(
-            self.get_tx_encryption_key(nonce)
-        )
+        if(tx_encryption_key == ""):
+            tx_encryption_key = await BaseAsyncAPI._try_await(
+                self.get_tx_encryption_key(nonce)
+            )
         siv = SIV(tx_encryption_key)
         plaintext = siv.open(ciphertext, [bytes()])
         return plaintext
@@ -210,7 +216,7 @@ class LCDUtils(AsyncLCDUtils):
     encrypt.__doc__ = AsyncLCDUtils.encrypt.__doc__
 
     @sync_bind(AsyncLCDUtils.decrypt)
-    async def decrypt(self, ciphertext, nonce) -> str:
+    async def decrypt(self, ciphertext, nonce, tx_encryption_key: Optional[str] = "") -> str:
         pass
 
     decrypt.__doc__ = AsyncLCDUtils.decrypt.__doc__

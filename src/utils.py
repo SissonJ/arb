@@ -55,8 +55,14 @@ def checkScrtBal(botInfo: BotInfo, scrtBal, tradeAmount, logLocation):
     return 
   return
 
-def getSSwapRatio(botInfo: BotInfo):
-  sswapInfo = botInfo.client.wasm.contract_query(botInfo.pairContractAddresses["pair1"], botInfo.pairContractQueries["pair1"])
+def getSSwapRatio(botInfo: BotInfo, nonce, tx_encryption_key):
+  sswapInfo = botInfo.client.wasm.contract_query(
+    botInfo.pairContractAddresses["pair1"], 
+    botInfo.pairContractQueries["pair1"], 
+    botInfo.pairContractHash["pair1"], 
+    nonce, 
+    tx_encryption_key,
+  )
   if( botInfo.pairToken1First["pair1"] ):
     token1Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token1"]
     token2Amount = float(sswapInfo['assets'][1]['amount']) * 10**-botInfo.tokenDecimals["token2"]
@@ -65,8 +71,14 @@ def getSSwapRatio(botInfo: BotInfo):
     token2Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token2"]
   return token1Amount/token2Amount, token1Amount, token2Amount
 
-def getSiennaRatio(botInfo: BotInfo):
-  siennaInfo = botInfo.client.wasm.contract_query(botInfo.pairContractAddresses["pair2"], botInfo.pairContractQueries["pair2"])
+def getSiennaRatio(botInfo: BotInfo, nonce, tx_encryption_key):
+  siennaInfo = botInfo.client.wasm.contract_query(
+    botInfo.pairContractAddresses["pair2"], 
+    botInfo.pairContractQueries["pair2"], 
+    botInfo.pairContractHash["pair2"], 
+    nonce, 
+    tx_encryption_key
+  )
   if(botInfo.pairToken1First["pair2"] ):
     token1Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token1"]
     token2Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token2"]

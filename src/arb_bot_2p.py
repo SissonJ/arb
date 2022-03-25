@@ -11,6 +11,7 @@ def main():
   botInfo = BotInfo(config[sys.argv[1]])
 
   nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
+  nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
 
   scrtBal, sscrtBal, shdBal, lastSscrtBal = 0, 0, 0, 0
   keepLooping = True
@@ -31,8 +32,8 @@ def main():
       txResponse = ""
       lastSscrtBal = sscrtBal
       checkScrtBal(botInfo, scrtBal, maxAmountSwapping, config[sys.argv[1]]["logLocation"])
-      siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo)
-      sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo)
+      sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo, nonceDictPair["first"], txEncryptionKeyDictPair["second"])
+      siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo, nonceDictPair["first"], txEncryptionKeyDictPair["second"])
     except Exception as e:
       print( e )
     try:
@@ -78,6 +79,7 @@ def main():
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
         botInfo.sequence = botInfo.wallet.sequence()
         scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
+      nonceDictPair, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
       keepLooping = True #set to false for only one run
     except Exception as e:
       print( "ERROR in tx\n" )

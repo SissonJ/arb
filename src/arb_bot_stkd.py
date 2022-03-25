@@ -12,6 +12,7 @@ def main():
   keeplooping = True
   botInfo = BotInfo(configStdk)
   client = LCDClient(testnet, "pulsar-2")
+  client.tendermint.block_info
   res = client.wasm.contract_query(configStdk["tokenAddrs"]["token2"], { "staking_info": { "time": round(time.time()) } })
   print(float(res["staking_info"]["price"])*10**-6)
   while keeplooping:
