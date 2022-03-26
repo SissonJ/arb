@@ -87,17 +87,29 @@ def getSiennaRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key
     token2Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token2"]
   return token1Amount/token2Amount, token1Amount, token2Amount
 
-def getStkdPrice(botInfo: BotInfo):
-  print(botInfo.tokenContractAddresses["token2"])
+def getStkdPrice(botInfo: BotInfo, nonce, txEncryptionKey):
   res = botInfo.client.wasm.contract_query(
     botInfo.tokenContractAddresses["token2"], 
-    { "staking_info": { "time": round(time.time()) } }
+    { "staking_info": { "time": round(time.time()) } },
+    botInfo.pairContractHash["token2"],
+    nonce,
+    txEncryptionKey,
   )
   return float(res["staking_info"]["price"])*10**-6
 
 def constantProduct(poolBuy, poolSell, x):
   out = -(poolBuy * poolSell)/(poolSell + x) + poolBuy
   return out
+
+def optimumProfit(poolBuy1, poolSell1, poolBuy2, poolSell2):
+  optimized = (9.380602724198101*10**-6*(-1.06613651635*10**11 * poolBuy1 * poolSell1 * poolSell2-1.06934455*10**11 * poolSell1 * poolSell2**2+1.0660297422966704*10**8 *
+    (994009 * poolBuy1**3 * poolSell1 * poolBuy2 * poolSell2 + 1.994*10**6 * poolBuy1**2 * poolSell1 * poolBuy2 *poolSell2**2 + 
+    1*10**6 * poolBuy1 * poolSell1 * poolBuy2 * poolSell2**3)**.5))/(994009 * poolBuy1**2 + 1.994*10**6 *poolBuy1*poolSell2 + 1*10**6 * poolSell2**2)
+  return optimized
+
+def optimumSwapAmountStdk(poolBuy, poolSell, mintPrice):
+  optimized = 0.0005015548199418196 * (1981.8642738593378 * mintPrice**.5 * poolBuy**.5 * poolSell**.5 - 2000 * poolSell)
+  return optimized
 
 def calculateProfitCP(s1t2, s1t1, s2t2, s2t1, amountSwapped, gasFeeScrt):
   firstSwap = constantProduct(s1t2, s1t1, amountSwapped*.996)
@@ -125,26 +137,20 @@ def calculateProfit(s1t2, s1t1, s2t2, s2t1, minimumAmountToSwap, gasFeeScrt):
       tempAmount = tempAmount + 50
   return amountToSwap, maxProfit, firstSwap, secondSwap
 
-def calculateProfitStdk(botInfo: BotInfo, minimumSwapAmount, gasFeeScrt):
-  ratio, s1t1, s1t2 = getSiennaRatio(botInfo)
-  skdtPrice = getStkdPrice(botInfo)
-  tempAmount = minimumSwapAmount
-  firstSwap = secondSwap = amountToSwap = 0
-  maxProfit = -1000
-  while tempAmount < 501:
-    tempFirstSwap = constantProduct(s1t2, s1t1, tempAmount*.9969)
-    tempSecondSwap = skdtPrice * tempFirstSwap * .985
-    tempProfit = tempSecondSwap - tempAmount - gasFeeScrt
-    if tempProfit > maxProfit:
-      amountToSwap = tempAmount
-      firstSwap = tempFirstSwap
-      secondSwap = tempSecondSwap
-      maxProfit = tempProfit
-    if(tempAmount < 100):
-      tempAmount = tempAmount + 10
-    else:
-      tempAmount = tempAmount + 50
-  return amountToSwap, maxProfit, firstSwap, secondSwap
+def calculateProfitStdk(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encryptionKeyDict):
+  ratio, s1t1, s1t2 = getSiennaRatio(botInfo, nonceDict["first"], encryptionKeyDict["first"])
+  stkdPrice = getStkdPrice(botInfo, nonceDict["second"], encryptionKeyDict["second"])
+  swapAmount = optimumSwapAmountStdk(s1t1,s1t2,stkdPrice)
+  firstSwap = secondSwap = profit = 0
+  if(swapAmount > maxAmount):
+    swapAmount = 500
+  if( swapAmount > 0 ):
+    firstSwap = constantProduct(s1t2, s1t1, swapAmount*.9969)
+    secondSwap = stkdPrice * firstSwap * .985
+    profit = swapAmount - secondSwap - gasFeeScrt
+  else:
+    return -1, -1, 0, 0
+  return swapAmount, profit, firstSwap, secondSwap, stkdPrice
 
 def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
 

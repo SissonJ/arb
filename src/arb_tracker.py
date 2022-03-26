@@ -5,7 +5,7 @@ from config import config
 
 from BotInfo import BotInfo
 from env import endpoint
-from utils import getSSwapRatio, getSiennaRatio, calculateProfit, sync_next_block
+from utils import getSSwapRatio, getSiennaRatio, calculateProfit, sync_next_block, optimumProfit
 
 def main():
   client = LCDClient(endpoint, 'secret-4')
@@ -20,7 +20,7 @@ def main():
     lastHeight = sync_next_block(client, lastHeight)
     for cfg in config:
       botInfo = BotInfo(config[cfg])
-      gasFeeScrt = int(botInfo.fee.to_data()["gas"])/4000000 + .00027
+      gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2 + .00027
       s1ratio, sswapt1, sswapt2 = getSSwapRatio(botInfo)
       s2ratio, siennat1, siennat2 = getSiennaRatio(botInfo)
       difference = s2ratio - s1ratio
@@ -34,6 +34,7 @@ def main():
         printval1, printval2, printval3, printval4 = siennat2, siennat1, sswapt2, sswapt1
       if( profit != lastProfit[cfg]):
         print(printval1, printval2, printval3, printval4, amountToSwap)
+        print(optimumProfit(printval1, printval2, printval4, printval3))
         print(datetime.now(), "height", lastHeight, cfg , "profit:", profit, sep="\t")
         print("sswap:", s1ratio, "sienna", s2ratio )
         print()

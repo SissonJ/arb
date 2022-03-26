@@ -23,7 +23,7 @@ def main():
   height = 0
   lastHeight = 0
   lastProfit = 0
-  gasFeeScrt = int(botInfo.fee.to_data()["gas"])/4000000 + .00027
+  gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2 + .00027
   scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
   print("Starting loop", sys.argv[1])
   while keepLooping:

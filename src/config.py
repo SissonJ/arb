@@ -1,4 +1,5 @@
-from env import mkSeed, endpoint, testnet
+from env import endpoint, testnet#, mkSeed
+from env import mkSeed2 as mkSeed
 
 sscrtAdresses = {
   "SSCRT_ADDRESS": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek",
@@ -42,42 +43,6 @@ config = {
       "price": "050001uscrt",
     },
   },
-  "sscrt-sienna-config": {
-    "mkSeed": mkSeed,
-    "pairAddrs": {
-      "pair1": "secret1rxrg8mp4qm5703ccz26lgh8hx7gpnkujrn6qcr", #SSWAP_SSCRT_SIENNA_PAIR
-      "pair2": "secret1guphvlle6wzjswda3ceuuu6m6ty36t6w5jn9rv", #SIENNA_SSCRT_SIENNA_PAIR
-    },
-    "pairQueries": {
-      "pair1": { 'pool': {} }, #SSWAP_QUERY
-      "pair2": 'pair_info', #SIENNA_QUERY
-    },
-    "token1First": {
-      "pair1": True,
-      "pair2": False,
-    },
-    "tokenAddrs": {
-      "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
-      "token2": "secret1rgm2m5t530tdzyd99775n6vzumxa5luxcllml4", #SIENNA_ADDRESS
-    },
-    "tokenKeys":{
-      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
-      "token2": "api_key_IiGUpxiB9+hry8VNpAx+6C9x72Tz1KEkhvAWtpLQUUU=", #SIENNA_API_KEY
-    },
-    "tokenDecimals":{
-      "token1": 6,
-      "token2": 18,
-    },
-    "clientInfo": {
-      "endpoint": endpoint,
-      "chainID": "secret-4"
-    },
-    "logLocation": "./../logs/sscrt-sienna-csv.csv",
-    "fee": {
-      "gas": 200001,
-      "price": "050001uscrt",
-    },
-  },
   "sscrt-seth-config": {
     "mkSeed": mkSeed,
     "pairAddrs": {
@@ -114,6 +79,48 @@ config = {
       "price": "050001uscrt",
     },
   },
+}
+
+configStdk = {
+    #"sscrt-stdk-config": {
+    "mkSeed": mkSeed,
+    "pairAddrs": {
+      "pair1": "TEMP", #SSWAP_SSCRT_STKD_PAIR
+      "pair2": "secret1pz76z6dfekq2pcnymmz68dtwu7qtuh6s0ppf7z", #STKD_CONTRACT
+    },
+    "pairQueries": {
+      "pair1": { 'pool': {} }, #SSWAP_QUERY
+      "pair2": 'pair_info', #SIENNA_QUERY
+    },
+    "token1First": {
+      "pair1": True,
+      "pair2": True,
+    },
+    "tokenAddrs": {
+      "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
+      "token2": "secret1pz76z6dfekq2pcnymmz68dtwu7qtuh6s0ppf7z", #STKD_CONTRACT
+    },
+    "tokenKeys":{
+      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
+      "token2": "TEMP", #STKD_API_KEY
+    },
+    "tokenDecimals":{
+      "token1": 6,
+      "token2": 6,
+    },
+    "clientInfo": {
+      "endpoint": testnet,
+      "chainID": "pulsar-2"
+    },
+    "logLocation": "./../logs/sscrt-stkd-csv.csv",
+    "fee": {
+      "gas": 200001,
+      "price": "050001uscrt",
+    },
+  #},
+}
+
+"""
   "sscrt-swbtc-config": {
     "mkSeed": mkSeed,
     "pairAddrs": {
@@ -185,15 +192,14 @@ config = {
       "gas": 200001,
       "price": "050001uscrt",
     },
-  },
-}
+  },"""
 
-configStdk = {
-    #"sscrt-stdk-config": {
+"""
+  "sscrt-sienna-config": {
     "mkSeed": mkSeed,
     "pairAddrs": {
-      "pair1": "TEMP", #SSWAP_SSCRT_STKD_PAIR
-      "pair2": "secret1pz76z6dfekq2pcnymmz68dtwu7qtuh6s0ppf7z", #STKD_CONTRACT
+      "pair1": "secret1rxrg8mp4qm5703ccz26lgh8hx7gpnkujrn6qcr", #SSWAP_SSCRT_SIENNA_PAIR
+      "pair2": "secret1guphvlle6wzjswda3ceuuu6m6ty36t6w5jn9rv", #SIENNA_SSCRT_SIENNA_PAIR
     },
     "pairQueries": {
       "pair1": { 'pool': {} }, #SSWAP_QUERY
@@ -201,28 +207,27 @@ configStdk = {
     },
     "token1First": {
       "pair1": True,
-      "pair2": True,
+      "pair2": False,
     },
     "tokenAddrs": {
       "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
-      "token2": "secret1pz76z6dfekq2pcnymmz68dtwu7qtuh6s0ppf7z", #STKD_CONTRACT
+      "token2": "secret1rgm2m5t530tdzyd99775n6vzumxa5luxcllml4", #SIENNA_ADDRESS
     },
     "tokenKeys":{
       "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
-      "token2": "TEMP", #STKD_API_KEY
+      "token2": "api_key_IiGUpxiB9+hry8VNpAx+6C9x72Tz1KEkhvAWtpLQUUU=", #SIENNA_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,
-      "token2": 6,
+      "token2": 18,
     },
     "clientInfo": {
-      "endpoint": testnet,
-      "chainID": "pulsar-2"
+      "endpoint": endpoint,
+      "chainID": "secret-4"
     },
-    "logLocation": "./../logs/sscrt-stkd-csv.csv",
+    "logLocation": "./../logs/sscrt-sienna-csv.csv",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",
     },
-  #},
-}
+  },"""
