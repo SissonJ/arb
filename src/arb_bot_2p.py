@@ -46,7 +46,7 @@ def main():
         optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfitOptimized(
           siennat2, siennat1, sswapt2, sswapt1, maxAmountSwapping, gasFeeScrt)
       if(profit != lastProfit):
-        print(datetime.now(), "  height:", height, "  profit:", profit)
+        print(datetime.now(), "  height:", height, "  profit:", profit, "swapAmount:", optimumAmountSwapping)
       lastProfit = profit
       if(height != lastHeight + 1 and lastHeight != 0):
         print(datetime.now(), "blocks skipped:", height - lastHeight)

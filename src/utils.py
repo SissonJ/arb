@@ -179,10 +179,9 @@ def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
 
   tx = botInfo.wallet.key.sign_tx(stdSignMsg)
   try:
-    #res = botInfo.client.tx.broadcast(tx)
-    #print(res)
-    #return res
-    return
+    res = botInfo.client.tx.broadcast(tx)
+    print(res)
+    return res
   except Exception as e:
     print(time.time(),"BROADCAST TX ERROR")
     print(time.time(), e )
