@@ -23,7 +23,7 @@ def main():
 
   nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
   nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
-  gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2 + .00027
+  gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2.5
   height = lastProfit = runningProfit = 0
   txResponse = ""
   #client = LCDClient(testnet, "pulsar-2")

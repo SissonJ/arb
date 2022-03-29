@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 from secret_sdk.client.lcd.lcdclient import LCDClient
 
 from config import config
@@ -17,10 +18,11 @@ def main():
     lastProfit.update( {cfg: 0} )
   print("Starting loop")
   while True:
+    time.sleep(5)
     lastHeight = sync_next_block(client, lastHeight)
     for cfg in config:
       botInfo = BotInfo(config[cfg])
-      gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2 + .00027
+      gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2.5
       s1ratio, sswapt1, sswapt2 = getSSwapRatio(botInfo)
       s2ratio, siennat1, siennat2 = getSiennaRatio(botInfo)
       difference = s2ratio - s1ratio
