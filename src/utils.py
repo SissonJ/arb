@@ -183,8 +183,8 @@ def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
     print(res)
     return res
   except Exception as e:
-    print(time.time(),"BROADCAST TX ERROR")
-    print(time.time(), e )
+    print(datetime.now(),"BROADCAST TX ERROR")
+    print(datetime.now(), e )
     return False
 
 def createMsgExecuteSswap(botInfo: BotInfo, expectedReturn, amountToSwap, contractAddr, contractHash, nonce, txEncryptionKey):
