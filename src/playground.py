@@ -5,6 +5,7 @@ from BotInfo import BotInfo
 from env import testnet
 from env import endpoint
 from env import mkSeed
+from env import mkSeed2
 from secret_sdk.client.lcd.lcdclient import LCDClient
 from secret_sdk.core.auth.data.tx import StdTx
 from utils import calculateProfitCP, constantProduct, getSiennaRatio, createMsgExecuteSienna
@@ -127,8 +128,9 @@ def swapSimulation():
 #swapSimulation()
 
 def oneRun():
+  cfg[sys.argv[1]]["mkSeed"] = mkSeed2
 
-  botInfo = BotInfo(config[sys.argv[1]])
+  botInfo = BotInfo(cfg[sys.argv[1]])
 
   nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
   nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
@@ -137,7 +139,7 @@ def oneRun():
   keepLooping = True
   txResponse = ""
   runningProfit = 0
-  minAmountSwapping = 10 #sscrt
+  minAmountSwapping = 1 #sscrt
   maxAmountSwapping = 500
   optimumAmountSwapping = 0
   height = 0
@@ -155,10 +157,10 @@ def oneRun():
   difference = siennaRatio - sswapRatio 
   profit= firstSwap = secondSwap = 0
   if( difference > 0 ):
-    optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfitCP(
+    optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfit(
       sswapt2, sswapt1, siennat2, siennat1, minAmountSwapping, gasFeeScrt)
   if( difference < 0 ):
-    optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfitCP(
+    optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfit(
       siennat2, siennat1, sswapt2, sswapt1, minAmountSwapping, gasFeeScrt)
   if(profit != lastProfit):
     print(datetime.now(), "  height:", height, "  profit:", profit)

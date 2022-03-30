@@ -180,7 +180,7 @@ def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
   tx = botInfo.wallet.key.sign_tx(stdSignMsg)
   try:
     res = botInfo.client.tx.broadcast(tx)
-    print(res)
+    #print(res)
     return res
   except Exception as e:
     print(datetime.now(),"BROADCAST TX ERROR")
@@ -204,20 +204,22 @@ def createMsgExecuteSienna(botInfo: BotInfo, expectedReturn, amountToSwap, contr
 def swapSienna(
     botInfo: BotInfo,
     sscrtBal, 
+    minExpected,
     firstSwap, 
-    secondSwap, 
+    #secondSwap, 
     nonceDict, 
     txEncryptionKeyDict,
   ):
 
   sscrtBalStr = str(int(sscrtBal * 10 ** botInfo.tokenDecimals["token1"]))
+  minExpectedStr = str(int(minExpected * 10 ** botInfo.tokenDecimals["token1"]))
   firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
-  firstMinExpected = str(int(firstSwapStr)-1)
-  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
+  #firstMinExpected = str(int(firstSwapStr)-1)
+  #secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
 
   msgExecuteSienna = createMsgExecuteSienna(
     botInfo, 
-    firstSwapStr, 
+    "0", 
     sscrtBalStr,  
     botInfo.tokenContractAddresses["token1"],
     botInfo.tokenContractHashes["token1"],
@@ -227,7 +229,7 @@ def swapSienna(
 
   msgExecuteSswap = createMsgExecuteSswap(
     botInfo,
-    secondSwapStr,
+    minExpectedStr,
     firstSwapStr,
     botInfo.tokenContractAddresses["token2"],
     botInfo.tokenContractHashes["token2"], 
@@ -240,20 +242,22 @@ def swapSienna(
 def swapSswap(
     botInfo: BotInfo,
     sscrtBal, 
+    minExpected,
     firstSwap, 
-    secondSwap, 
+    #secondSwap, 
     nonceDict, 
     txEncryptionKeyDict,
   ):
 
   sscrtBalStr = str(int(sscrtBal * 10 ** botInfo.tokenDecimals["token1"]))
+  minExpectedStr = str(int(minExpected * 10 ** botInfo.tokenDecimals["token1"]))
   firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
-  firstMinExpected = str(int(int(firstSwapStr) * .999))
-  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
+  #firstMinExpected = str(int(int(firstSwapStr) * .999))
+  #secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
 
   msgExecuteSswap = createMsgExecuteSswap(
     botInfo, 
-    firstSwapStr,
+    "0",
     sscrtBalStr,
     botInfo.tokenContractAddresses["token1"],
     botInfo.tokenContractHashes["token1"],
@@ -263,7 +267,7 @@ def swapSswap(
 
   msgExecuteSienna = createMsgExecuteSienna(
     botInfo,
-    secondSwapStr,
+    minExpectedStr,
     firstSwapStr,
     botInfo.tokenContractAddresses["token2"],
     botInfo.tokenContractHashes["token2"],

@@ -55,8 +55,8 @@ def main():
         txResponse = swapSswap(
           botInfo,
           optimumAmountSwapping,
+          optimumAmountSwapping + gasFeeScrt,
           firstSwap,
-          secondSwap,
           nonceDict,
           txEncryptionKeyDict,
         )
@@ -64,8 +64,8 @@ def main():
         txResponse = swapSienna(
           botInfo,
           optimumAmountSwapping,
+          optimumAmountSwapping + gasFeeScrt,
           firstSwap,
-          secondSwap,
           nonceDict,
           txEncryptionKeyDict,
         )
@@ -77,8 +77,8 @@ def main():
           print(datetime.now(), "Success! Running profit:", runningProfit)
         recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
         nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
-        botInfo.sequence = botInfo.wallet.sequence()
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
+      botInfo.sequence = botInfo.wallet.sequence()
       nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
       keepLooping = True #set to false for only one run
     except Exception as e:
