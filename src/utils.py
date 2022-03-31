@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import time
 import csv
@@ -86,6 +87,61 @@ def getSiennaRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key
     token1Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token1"]
     token2Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token2"]
   return token1Amount/token2Amount, token1Amount, token2Amount
+
+async def getSSwapRatioAsync(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
+  sswapInfo = await botInfo.asyncClient.wasm.contract_query(
+    botInfo.pairContractAddresses["pair1"], 
+    botInfo.pairContractQueries["pair1"], 
+    botInfo.pairContractHash["pair1"], 
+    nonce, 
+    tx_encryption_key,
+  )
+  if( botInfo.pairToken1First["pair1"] ):
+    token1Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(sswapInfo['assets'][1]['amount']) * 10**-botInfo.tokenDecimals["token2"]
+  else:
+    token1Amount = float(sswapInfo['assets'][1]['amount']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token2"]
+  print(token1Amount/token2Amount, token1Amount, token2Amount)
+  return token1Amount/token2Amount, token1Amount, token2Amount
+
+async def getSiennaRatioAsync(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
+  siennaInfo = await botInfo.asyncClient.wasm.contract_query(
+    botInfo.pairContractAddresses["pair2"], 
+    botInfo.pairContractQueries["pair2"], 
+    botInfo.pairContractHash["pair2"], 
+    nonce, 
+    tx_encryption_key
+  )
+  if(botInfo.pairToken1First["pair2"] ):
+    token1Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token2"]
+  else:
+    token1Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token2"]
+  print(token1Amount/token2Amount, token1Amount, token2Amount)
+  return token1Amount/token2Amount, token1Amount, token2Amount
+
+async def runAsyncQueries(botInfo: BotInfo, nonceDict, txEncryptionKeyDict):
+  task1 = asyncio.create_task(getSSwapRatioAsync(botInfo))#, nonceDict["first"], txEncryptionKeyDict["first"]))
+  task2 = asyncio.create_task(getSiennaRatioAsync(botInfo))#, nonceDict["second"], txEncryptionKeyDict["second"]))
+  sswapRatio, sswapt1, sswapt2 = await task1
+  siennaRatio, siennat1, siennat2 = await task2
+  return sswapRatio, sswapt1, sswapt2, siennaRatio, siennat1, siennat2
+  #await asyncio.gather(task1, task2)
+  #return 0,0,0,0,0,0
+
+def runSyncQueries(botInfo: BotInfo, nonceDict, txEncryptionKeyDict):
+  start = time.time()
+  sswapRatio = sswapt1 = sswapt2 = siennaRatio = siennat1= siennat2 = 1
+  sswapRatio, sswapt1, sswapt2, siennaRatio, siennat1, siennat2 = asyncio.get_event_loop().run_until_complete(
+    runAsyncQueries(botInfo, nonceDict, txEncryptionKeyDict)
+  )
+  while sswapRatio == sswapt1 == sswapt2 == siennaRatio == siennat1== siennat2 == 1:
+    pass
+  end = time.time()
+  print(end-start)
+  return sswapRatio, sswapt1, sswapt2, siennaRatio, siennat1, siennat2
 
 def getStkdPrice(botInfo: BotInfo, nonce, txEncryptionKey):
   res = botInfo.client.wasm.contract_query(
@@ -280,15 +336,17 @@ def swapSswap(
 def swapStkd(
     botInfo: BotInfo,
     stkdBal, 
-    firstSwap, 
-    secondSwap, 
+    firstSwap,
+    minAmountRec, 
+    #secondSwap, 
     nonceDict, 
     txEncryptionKeyDict,
   ):
 
   stkdBalStr = str(int(stkdBal * 10 ** botInfo.tokenDecimals["token1"]))
   firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
-  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
+  minAmountRecStr = str(int(stkdBal * 10 ** botInfo.tokenDecimals["token1"]))
+  #secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
 
   msgExecuteSienna = createMsgExecuteSienna(
     botInfo,

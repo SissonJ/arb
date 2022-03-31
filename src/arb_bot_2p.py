@@ -1,17 +1,19 @@
+import asyncio
 from datetime import datetime
 import sys
+import traceback
 
 from BotInfo import BotInfo
 from config import config
-from utils import calculateProfitOptimized, generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio 
+from utils import calculateProfitOptimized, generateTxEncryptionKeys, runAsyncQueries, runSyncQueries, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio 
 from utils import calculateProfit, swapSienna, swapSswap, recordTx
 
 def main():
 
-  botInfo = BotInfo(config[sys.argv[1]])
+  botInfo = BotInfo(config["sscrt-shd-config"])#config[sys.argv[1]])
 
-  nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
-  nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
+  nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
+  nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
 
   scrtBal, sscrtBal, shdBal, lastSscrtBal = 0, 0, 0, 0
   keepLooping = True
@@ -25,17 +27,21 @@ def main():
   lastProfit = 0
   gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2.5
   #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
-  print("Starting loop", sys.argv[1])
+  print("Starting loop")#, sys.argv[1])
   while keepLooping:
     try:
       height = sync_next_block(botInfo.client, lastHeight)
       txResponse = ""
       lastSscrtBal = sscrtBal
       #checkScrtBal(botInfo, scrtBal, maxAmountSwapping, config[sys.argv[1]]["logLocation"])
-      sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo, nonceDictPair["first"], txEncryptionKeyDictPair["first"])
-      siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo, nonceDictPair["second"], txEncryptionKeyDictPair["second"])
+      sswapRatio, sswapt1, sswapt2,siennaRatio, siennat1, siennat2= runSyncQueries(botInfo, nonceDictQuery, txEncryptionKeyDictQuery)
+      #sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo, nonceDictQuery["first"], txEncryptionKeyDictQuery["first"])
+      #siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo, nonceDictQuery["second"], txEncryptionKeyDictQuery["second"])
+      print(sswapRatio, sswapt1, sswapt2, siennaRatio, siennat1, siennat2)
     except Exception as e:
+      print(traceback.format_exc())
       print( e )
+      pass
     try:
       difference = siennaRatio - sswapRatio 
       profit= firstSwap = secondSwap = 0
@@ -57,8 +63,8 @@ def main():
           optimumAmountSwapping,
           optimumAmountSwapping + gasFeeScrt,
           firstSwap,
-          nonceDict,
-          txEncryptionKeyDict,
+          nonceDictSwap,
+          txEncryptionKeyDictSwap,
         )
       if(profit > 0 and difference < 0):
         txResponse = swapSienna(
@@ -66,8 +72,8 @@ def main():
           optimumAmountSwapping,
           optimumAmountSwapping + gasFeeScrt,
           firstSwap,
-          nonceDict,
-          txEncryptionKeyDict,
+          nonceDictSwap,
+          txEncryptionKeyDictSwap,
         )
       if( txResponse != ""):
         if(not txResponse or txResponse.is_tx_error()):
@@ -76,11 +82,11 @@ def main():
           runningProfit += profit
           print(datetime.now(), "Success! Running profit:", runningProfit)
         recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
-        nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
+        nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       botInfo.sequence = botInfo.wallet.sequence()
-      nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
-      keepLooping = True #set to false for only one run
+      nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+      keepLooping = False #set to false for only one run
     except Exception as e:
       print( "ERROR in tx\n" )
       print( e )

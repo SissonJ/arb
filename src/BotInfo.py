@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from secret_sdk.client.lcd.lcdclient import LCDClient
+from secret_sdk.client.lcd.lcdclient import AsyncLCDClient, LCDClient
 from secret_sdk.client.lcd.wallet import Wallet
 from secret_sdk.core.auth.data.tx import StdFee
 from secret_sdk.key.mnemonic import MnemonicKey
@@ -7,6 +7,7 @@ from secret_sdk.key.mnemonic import MnemonicKey
 
 class BotInfo:
   client: LCDClient
+  asyncClient: AsyncLCDClient
   wallet: Wallet
   accAddr: str
   pairContractAddresses: Dict[str, str]
@@ -24,6 +25,7 @@ class BotInfo:
 
   def __init__(self, botConfig):
     self.client = LCDClient(botConfig["clientInfo"]["endpoint"], botConfig["clientInfo"]["chainID"])
+    self.asyncClient = AsyncLCDClient(botConfig["clientInfo"]["endpoint"], botConfig["clientInfo"]["chainID"])
     self.wallet = self.client.wallet(MnemonicKey(mnemonic=botConfig["mkSeed"]))
     self.accAddr = self.wallet.key.acc_address
     self.pairContractAddresses = botConfig["pairAddrs"]

@@ -22,7 +22,7 @@ def main():
   maxAmount = 200
 
   nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
-  nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
+  nonceDictSwap, encryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
   gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2.5
   height = lastProfit = runningProfit = 0
   txResponse = ""
@@ -33,8 +33,15 @@ def main():
     height = sync_next_block(botInfo.client, height)
     txResponse = ""
     amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStdk(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
-    if( profit > 0 ):
-      txResponse = swapStkd(botInfo, amountToSwap, firstSwap, secondSwap, nonceDictSwap, encryptionKeySwap)
+    if(True or profit > 0 ): #remove after testing
+      txResponse = swapStkd(
+        botInfo, 
+        amountToSwap, 
+        amountToSwap + (gasFeeScrt/mintPrice), 
+        firstSwap,
+        nonceDictSwap, 
+        encryptionKeyDictSwap
+      )
     if(profit != lastProfit):
         print(datetime.now(), "  height:", height, "  profit:", profit)
     lastProfit = profit
@@ -45,12 +52,12 @@ def main():
         runningProfit += profit
         print(datetime.now(), "Success! Running profit:", runningProfit)
       recordTx(botInfo, configStdk["logLocation"], amountToSwap, mintPrice)
-      nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
-      botInfo.sequence = botInfo.wallet.sequence()
+      nonceDictSwap, encryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
       scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       if(scrtBal < 1):
         break
     nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+    botInfo.sequence = botInfo.wallet.sequence()
     keeplooping = False
   return
 
