@@ -30,7 +30,7 @@ def sync_next_block(client:LCDClient, height=0):
       return new_height
     time.sleep(.5)
 
-async def generateTxEncryptionKeys(client: LCDClient):
+def generateTxEncryptionKeys(client: LCDClient):
   nonceDict = {"first":client.utils.generate_new_seed(), "second":client.utils.generate_new_seed()}
   txEncryptionKeyDict = {
     "first": client.utils.get_tx_encryption_key(nonceDict["first"]), 

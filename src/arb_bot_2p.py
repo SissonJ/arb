@@ -14,8 +14,8 @@ async def main():
 
   botInfo = BotInfo(config[sys.argv[1]])
 
-  nonceDictSwap, txEncryptionKeyDictSwap = await generateTxEncryptionKeys(botInfo.client)
-  nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeys(botInfo.client)
+  nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
+  nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
 
   sscrtBal = 0
   keepLooping = True
@@ -32,8 +32,8 @@ async def main():
   while keepLooping:
     if lastLoopIsError:
       botInfo.sequence = botInfo.wallet.sequence()
-      nonceDictSwap, txEncryptionKeyDictSwap = await generateTxEncryptionKeys(botInfo.client)
-      nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeys(botInfo.client)
+      nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
+      #nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
       lastLoopIsError = False
       pass
     try:
@@ -97,9 +97,9 @@ async def main():
         recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       botInfo.sequence = botInfo.wallet.sequence()
-      nonceDictSwap, txEncryptionKeyDictSwap = await generateTxEncryptionKeys(botInfo.client)
-      nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeys(botInfo.client)
-      keepLooping = False #set to false for only one run
+      nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
+      #nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+      keepLooping = True #set to false for only one run
     except Exception as e:
       print(datetime.now(), "Error in Queries")
       print(traceback.format_exc())
