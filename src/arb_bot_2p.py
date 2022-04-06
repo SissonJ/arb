@@ -1,48 +1,62 @@
+import asyncio
 from datetime import datetime
 import sys
+import time
+import traceback
 
 from BotInfo import BotInfo
 from config import config
-from utils import calculateProfitOptimized, generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio 
-from utils import calculateProfit, swapSienna, swapSswap, recordTx
+from utils import calculateProfitOptimized, sync_next_block
+from utils import swapSienna, swapSswap, recordTx, generateTxEncryptionKeys
+from utils_async import runAsyncQueries
 
-def main():
+async def main():
 
   botInfo = BotInfo(config[sys.argv[1]])
 
-  nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
-  nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
+  nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
+  nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
 
-  scrtBal, sscrtBal, shdBal, lastSscrtBal = 0, 0, 0, 0
+  sscrtBal = 0
   keepLooping = True
   txResponse = ""
   runningProfit = 0
-  minAmountSwapping = 40 #sscrt
-  maxAmountSwapping = 500
+  maxAmountSwapping = 600
   optimumAmountSwapping = 0
   height = 0
   lastHeight = 0
   lastProfit = 0
+  lastLoopIsError = False
   gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2.5
-  #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
-  print("Starting loop", sys.argv[1])
+  print("Starting loop")#, sys.argv[1])
   while keepLooping:
+    if lastLoopIsError:
+      botInfo.sequence = botInfo.wallet.sequence()
+      nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
+      #nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+      lastLoopIsError = False
+      pass
     try:
       height = sync_next_block(botInfo.client, lastHeight)
       txResponse = ""
-      lastSscrtBal = sscrtBal
-      #checkScrtBal(botInfo, scrtBal, maxAmountSwapping, config[sys.argv[1]]["logLocation"])
-      sswapRatio, sswapt1, sswapt2 = getSSwapRatio(botInfo, nonceDictPair["first"], txEncryptionKeyDictPair["first"])
-      siennaRatio, siennat1, siennat2 = getSiennaRatio(botInfo, nonceDictPair["second"], txEncryptionKeyDictPair["second"])
+      sswapRatio, sswapt1, sswapt2,siennaRatio, siennat1, siennat2= await runAsyncQueries(
+        botInfo, 
+        nonceDictQuery, 
+        txEncryptionKeyDictQuery
+      )
     except Exception as e:
+      print(datetime.now(), "Error in Queries")
+      print(traceback.format_exc())
       print( e )
+      lastLoopIsError = True
+      pass
     try:
       difference = siennaRatio - sswapRatio 
       profit= firstSwap = secondSwap = 0
-      if( difference > 0 ):
+      if(difference > 0 ):
         optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfitOptimized(
           sswapt2, sswapt1, siennat2, siennat1, maxAmountSwapping, gasFeeScrt)
-      if( difference < 0 ):
+      if(difference < 0 ):
         optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfitOptimized(
           siennat2, siennat1, sswapt2, sswapt1, maxAmountSwapping, gasFeeScrt)
       if(profit != lastProfit):
@@ -57,8 +71,8 @@ def main():
           optimumAmountSwapping,
           optimumAmountSwapping + gasFeeScrt,
           firstSwap,
-          nonceDict,
-          txEncryptionKeyDict,
+          nonceDictSwap,
+          txEncryptionKeyDictSwap,
         )
       if(profit > 0 and difference < 0):
         txResponse = swapSienna(
@@ -66,9 +80,14 @@ def main():
           optimumAmountSwapping,
           optimumAmountSwapping + gasFeeScrt,
           firstSwap,
-          nonceDict,
-          txEncryptionKeyDict,
+          nonceDictSwap,
+          txEncryptionKeyDictSwap,
         )
+    except Exception as e:
+      print(datetime.now(), "Error in TX")
+      print(traceback.format_exc())
+      print( e )
+    try:
       if( txResponse != ""):
         if(not txResponse or txResponse.is_tx_error()):
           print(datetime.now(), "Failed")
@@ -76,15 +95,16 @@ def main():
           runningProfit += profit
           print(datetime.now(), "Success! Running profit:", runningProfit)
         recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
-        nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       botInfo.sequence = botInfo.wallet.sequence()
-      nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
+      nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
+      #nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
       keepLooping = True #set to false for only one run
     except Exception as e:
-      print( "ERROR in tx\n" )
+      print(datetime.now(), "Error in Queries")
+      print(traceback.format_exc())
       print( e )
-      #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
-      return
+      lastLoopIsError = True
+      pass
 
-main()
+asyncio.get_event_loop().run_until_complete(main())

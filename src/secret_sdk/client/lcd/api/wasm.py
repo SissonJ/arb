@@ -87,10 +87,10 @@ class AsyncWasmAPI(BaseAsyncAPI):
         self, 
         contract_address: str, 
         query: dict, 
-        contract_code_hash: Optional[str] = "",
-        nonce: Optional[int]=0, 
-        tx_encryption_key: Optional[str]="",
-        height: Optional[int] = 0, 
+        contract_code_hash: str = "",
+        nonce: int =0, 
+        tx_encryption_key: str ="",
+        height: int = 0, 
     ) -> Any:
         """Runs a QueryMsg on a contract.
 
@@ -192,10 +192,10 @@ class WasmAPI(AsyncWasmAPI):
     def contract_query(
         self, 
         contract_address: str, query_msg: dict, 
-        height: Optional[int] = 0,
-        contract_code_hash: Optional[str] = "",
-        nonce: Optional[int]=0, 
-        tx_encryption_key: Optional[str]="",
+        contract_code_hash: str = "",
+        nonce: int = 0, 
+        tx_encryption_key: str ="",
+        height: int = 0,
     ) -> Any:
         pass
 

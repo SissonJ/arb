@@ -53,12 +53,12 @@ def main():
         runningProfit += profit
         print(datetime.now(), "Success! Running profit:", runningProfit)
       recordTx(botInfo, configStdk["logLocation"], amountToSwap, mintPrice)
-      nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
-      botInfo.sequence = botInfo.wallet.sequence()
+      nonceDictSwap, encryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
       scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       if(scrtBal < 1):
         break
     nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+    botInfo.sequence = botInfo.wallet.sequence()
     keeplooping = True
   return
 
