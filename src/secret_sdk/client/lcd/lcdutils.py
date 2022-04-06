@@ -133,7 +133,6 @@ class AsyncLCDUtils(BaseAsyncAPI):
             nonce: Optional[int]=0, 
             tx_encryption_key: Optional[str]=''
         ):
-        print(msg, nonce, tx_encryption_key)
         if(nonce == 0):
             nonce = self.generate_new_seed()
         if(tx_encryption_key == ''):

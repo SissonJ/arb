@@ -96,7 +96,6 @@ class AsyncLCDClient:
             urljoin(self.url, endpoint), params=params
         ) as response:
             try:
-                print(response)
                 result = await response.json(content_type=None)
             except JSONDecodeError:
                 raise LCDResponseError(message=str(response.reason), response=response)
