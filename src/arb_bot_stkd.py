@@ -5,12 +5,12 @@ from datetime import datetime
 from time import time
 from BotInfo import BotInfo
 from config import configStdk
-from env import testnet
+from env import endpoint
 import time
 
 def getStkdPrice(client: LCDClient):
   res = client.wasm.contract_query(
-    "secret1pz76z6dfekq2pcnymmz68dtwu7qtuh6s0ppf7z", 
+    "secret1k6u0cy4feepm6pehnz804zmwakuwdapm69tuc4", 
     { "staking_info": { "time": round(time.time()) } }
   )
   return float(res["staking_info"]["price"])*10**-6
@@ -22,28 +22,29 @@ def main():
   maxAmount = 200
 
   nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
-  nonceDictSwap, encryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
-  gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2.5
+  nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
+  gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*3
   height = lastProfit = runningProfit = 0
   txResponse = ""
-  #client = LCDClient(testnet, "pulsar-2")
+  #client = LCDClient(endpoint, "secret-4")
   #print(getStkdPrice(client))
+  #print(client.wasm.contract_query(
+  #  "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct",
+  #  'pair_info',
+  #))
   while keeplooping:
+    try:
     #add try catch after degugging
-    height = sync_next_block(botInfo.client, height)
-    txResponse = ""
-    amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStdk(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
-    if(True or profit > 0 ): #remove after testing
-      txResponse = swapStkd(
-        botInfo, 
-        amountToSwap, 
-        amountToSwap + (gasFeeScrt/mintPrice), 
-        firstSwap,
-        nonceDictSwap, 
-        encryptionKeyDictSwap
-      )
+      height = sync_next_block(botInfo.client, height)
+      txResponse = ""
+      amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStdk(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
+      print(profit)
+    except:
+      pass
+    if(profit > 0 ):
+      txResponse = swapStkd(botInfo, amountToSwap, firstSwap, secondSwap, nonceDictSwap, encryptionKeySwap)
     if(profit != lastProfit):
-        print(datetime.now(), "  height:", height, "  profit:", profit)
+       print(datetime.now(), "  height:", height, "  profit:", profit)
     lastProfit = profit
     if( txResponse != ""):
       if(not txResponse or txResponse.is_tx_error()):
@@ -58,7 +59,7 @@ def main():
         break
     nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
     botInfo.sequence = botInfo.wallet.sequence()
-    keeplooping = False
+    keeplooping = True
   return
 
 main()
