@@ -130,12 +130,12 @@ class AsyncLCDUtils(BaseAsyncAPI):
             self, 
             contract_code_hash: str, 
             msg: Any, 
-            nonce: Optional[int]=0, 
-            tx_encryption_key: Optional[str]=''
+            nonce: Optional[int]=None, 
+            tx_encryption_key: Optional[str]=None
         ):
-        if(nonce == 0):
+        if(nonce is None):
             nonce = self.generate_new_seed()
-        if(tx_encryption_key == ''):
+        if(tx_encryption_key is None):
             tx_encryption_key = await BaseAsyncAPI._try_await(
                 self.get_tx_encryption_key(nonce)
             )
@@ -155,12 +155,12 @@ class AsyncLCDUtils(BaseAsyncAPI):
         self, 
         ciphertext: bytes, 
         nonce: List[int], 
-        tx_encryption_key: Optional[str] = "",
+        tx_encryption_key: Optional[str] = None,
     ) -> bytes:
         if not ciphertext:
             return bytes([])
 
-        if(tx_encryption_key == ""):
+        if(tx_encryption_key is None):
             tx_encryption_key = await BaseAsyncAPI._try_await(
                 self.get_tx_encryption_key(nonce)
             )
@@ -216,7 +216,7 @@ class LCDUtils(AsyncLCDUtils):
     encrypt.__doc__ = AsyncLCDUtils.encrypt.__doc__
 
     @sync_bind(AsyncLCDUtils.decrypt)
-    async def decrypt(self, ciphertext, nonce, tx_encryption_key: Optional[str] = "") -> str:
+    async def decrypt(self, ciphertext, nonce, tx_encryption_key: Optional[str] = None) -> str:
         pass
 
     decrypt.__doc__ = AsyncLCDUtils.decrypt.__doc__

@@ -122,7 +122,7 @@ configStdk = {
     "mkSeed": mkSeed,
     "pairAddrs": {
       "pair1": "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct", #SIENNA_SSCRT_STKD_PAIR
-      "pair2": "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct", #STKD_CONTRACT
+      "pair2": "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct", #SIENNA_SSCRT_STKD_PAIR
     },
     "pairQueries": {
       "pair1": { 'pool': {} }, #SSWAP_QUERY
@@ -150,8 +150,8 @@ configStdk = {
     },
     "logLocation": "./../logs/sscrt-stkd-csv.csv",
     "fee": {
-      "gas": 300001,
-      "price": "075000uscrt",
+      "gas": 500001,
+      "price": "125000uscrt",
     },
   #},
 }

@@ -87,9 +87,9 @@ class AsyncWasmAPI(BaseAsyncAPI):
         self, 
         contract_address: str, 
         query: dict, 
-        contract_code_hash: Optional[str] = "",
-        nonce: Optional[int]=0, 
-        tx_encryption_key: Optional[str]="",
+        contract_code_hash: Optional[str] = None,
+        nonce: Optional[int]=None, 
+        tx_encryption_key: Optional[str]=None,
         height: Optional[int] = 0, 
     ) -> Any:
         """Runs a QueryMsg on a contract.
@@ -102,11 +102,11 @@ class AsyncWasmAPI(BaseAsyncAPI):
             Any: results of query
         """
         query_str = json.dumps(query, separators=(",", ":"))
-        if(contract_code_hash == ""):
+        if(contract_code_hash is None):
             contract_code_hash = await BaseAsyncAPI._try_await(
                 self.contract_hash(contract_address)
             )
-        if(nonce == 0 and tx_encryption_key == ""):
+        if(nonce is None and tx_encryption_key is None):
             encrypted = await BaseAsyncAPI._try_await(
                 self._c.utils.encrypt(contract_code_hash, query_str)
             )
@@ -132,12 +132,12 @@ class AsyncWasmAPI(BaseAsyncAPI):
         contract_address: AccAddress,
         handle_msg: dict,
         transfer_amount: Optional[Coins] = None,
-        contract_code_hash: Optional[str] = '',
-        nonce: Optional[Any]=0, 
-        tx_encryption_key: Optional[str]='',
+        contract_code_hash: Optional[str] = None,
+        nonce: Optional[Any]= None, 
+        tx_encryption_key: Optional[str]= None,
     ) -> MsgExecuteContract:
         msg_str = json.dumps(handle_msg, separators=(",", ":"))
-        if( contract_code_hash == ''):
+        if( contract_code_hash is None):
             contract_code_hash = await BaseAsyncAPI._try_await(
                 self.contract_hash(contract_address)
             )
@@ -192,10 +192,10 @@ class WasmAPI(AsyncWasmAPI):
     def contract_query(
         self, 
         contract_address: str, query_msg: dict, 
-        height: Optional[int] = 0,
-        contract_code_hash: Optional[str] = "",
-        nonce: Optional[int]=0, 
-        tx_encryption_key: Optional[str]="",
+        height: Optional[int],
+        contract_code_hash: Optional[str],
+        nonce: Optional[int], 
+        tx_encryption_key: Optional[str],
     ) -> Any:
         pass
 

@@ -56,7 +56,7 @@ def checkScrtBal(botInfo: BotInfo, scrtBal, tradeAmount, logLocation):
     return 
   return
 
-def getSSwapRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
+def getSSwapRatio(botInfo: BotInfo, nonce: Optional[int] = None, tx_encryption_key: Optional[str] = None):
   sswapInfo = botInfo.client.wasm.contract_query(
     botInfo.pairContractAddresses["pair1"], 
     botInfo.pairContractQueries["pair1"], 
@@ -72,7 +72,7 @@ def getSSwapRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key:
     token2Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token2"]
   return token1Amount/token2Amount, token1Amount, token2Amount
 
-def getSiennaRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
+def getSiennaRatio(botInfo: BotInfo, nonce: Optional[int] = None, tx_encryption_key: Optional[str] = None):
   siennaInfo = botInfo.client.wasm.contract_query(
     botInfo.pairContractAddresses["pair2"], 
     botInfo.pairContractQueries["pair2"], 
@@ -80,6 +80,7 @@ def getSiennaRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key
     nonce, 
     tx_encryption_key
   )
+  print(siennaInfo)
   if(botInfo.pairToken1First["pair2"] ):
     token1Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token1"]
     token2Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token2"]
@@ -153,13 +154,13 @@ def calculateProfitOptimized(s1t2,s1t1,s2t2,s2t1, max, gasFeeScrt):
 def calculateProfitStdk(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encryptionKeyDict):
   ratio, s1t1, s1t2 = getSiennaRatio(botInfo, nonceDict["first"], encryptionKeyDict["first"])
   stkdPrice = getStkdPrice(botInfo, nonceDict["second"], encryptionKeyDict["second"])
-  print(ratio, stkdPrice)
-  swapAmount = optimumSwapAmountStdk(s1t1,s1t2,stkdPrice)
+  #swapAmount = optimumSwapAmountStdk(s1t1,s1t2,stkdPrice)
+  print(s1t1, s1t2, ratio, stkdPrice)
   firstSwap = secondSwap = profit = 0
-  if(swapAmount > maxAmount):
-    swapAmount = 500
+  #if(swapAmount > maxAmount):
+  swapAmount = maxAmount
   if( swapAmount > 0 ):
-    firstSwap = constantProduct(s1t2, s1t1, swapAmount*.9969)
+    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
     secondSwap = stkdPrice * firstSwap * .998
     profit = swapAmount - secondSwap - gasFeeScrt
   else:
@@ -189,7 +190,7 @@ def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
     print(datetime.now(), e )
     return False
 
-def broadcastTxStdk(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConvertSscrt):
+def broadcastTxStkd(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConvertSscrt):
 
   stdSignMsg = StdSignMsg.from_data({
     "chain_id": "secret-4",
@@ -346,7 +347,7 @@ def swapStkd(
   
   print(Coins.from_str(firstSwapStr+"uscrt"))
 
-  return broadcastTxStdk(botInfo, msgExecuteSienna, msgExecuteStdk, msgSscrtToScrt)
+  return broadcastTxStkd(botInfo, msgExecuteSienna, msgExecuteStdk, msgSscrtToScrt)
   
 
 def generateTxEncryptionKeys(client: LCDClient):

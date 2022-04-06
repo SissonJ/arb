@@ -26,22 +26,29 @@ def main():
   gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*3
   height = lastProfit = runningProfit = 0
   txResponse = ""
+  profit = 0
   #client = LCDClient(endpoint, "secret-4")
   #print(getStkdPrice(client))
   #print(client.wasm.contract_query(
   #  "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct",
   #  'pair_info',
   #))
+  print("starting loop")
   while keeplooping:
-    try:
+    #try:
     #add try catch after degugging
-      height = sync_next_block(botInfo.client, height)
-      txResponse = ""
-      amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStdk(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
-      print(profit)
-    except:
-      pass
+    print("here")
+    height = sync_next_block(botInfo.client, height)
+    print("here")
+    txResponse = ""
+    amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStdk(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
+    print("here")
+    print(profit)
+    #except:
+    #  pass
     if(profit > 0 ):
+      print("wow!")
+      txResponse = ""
       txResponse = swapStkd(botInfo, amountToSwap, firstSwap, secondSwap, nonceDictSwap, encryptionKeySwap)
     if(profit != lastProfit):
        print(datetime.now(), "  height:", height, "  profit:", profit)
