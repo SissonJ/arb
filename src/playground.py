@@ -9,6 +9,10 @@ from env import endpoint
 from env import mkSeed
 from env import mkSeed2
 from secret_sdk.client.lcd.lcdclient import LCDClient
+from secret_sdk.core.auth.data.tx import StdFee, StdSignMsg, StdTx
+from secret_sdk.core.coins import Coins
+from secret_sdk.key.key import Key
+from secret_sdk.key.mnemonic import MnemonicKey
 from secret_sdk.client.lcd.lcdclient import AsyncLCDClient
 from secret_sdk.core.auth.data.tx import StdTx
 from utils import calculateProfitCP, constantProduct, getSiennaRatio, createMsgExecuteSienna
@@ -245,6 +249,41 @@ def oneRun():
     scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
   nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
   keepLooping = True #set to false for only one run
+
+#oneRun()
+
+def swapTest():
+  res = ""
+  client = LCDClient(endpoint, "secret-4")
+  wallet = client.wallet(MnemonicKey(mkSeed))
+  print(wallet.account_number_and_sequence())
+  msgSienna = json.dumps({"swap":{"to":None,"expected_return":"0"}})
+  encryptedMsgSienna = str( base64.b64encode(msgSienna.encode("utf-8")), "utf-8")
+  handleMsgSienna = { "send": {"recipient": "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct", "amount": "100", "msg": encryptedMsgSienna }}
+  #res = wallet.execute_tx("secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", handleMsgSienna, "", [])
+  print("stkdscrt to sscrt",res)
+  #asyncio.sleep(6)
+  #res = wallet.execute_tx("secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", {"redeem":{"amount": "100"}}, "", [])
+  print("sscrt to scrt", res)
+  #asyncio.sleep(6)
+  #res = wallet.execute_tx("secret1k6u0cy4feepm6pehnz804zmwakuwdapm69tuc4", {"stake": {}}, "",Coins.from_str("100"+"uscrt"),gas=300000)
+  executeMsg = client.wasm.contract_execute_msg(wallet.key.acc_address, "secret1k6u0cy4feepm6pehnz804zmwakuwdapm69tuc4", {"stake": {}},Coins.from_str("10000"+"uscrt"))
+  stdSignMsg = StdSignMsg.from_data({
+    "chain_id": "secret-4",
+    "account_number": wallet.account_number(),
+    "sequence": wallet.sequence(),
+    "fee": StdFee(500001,"125000uscrt").to_data(),
+    "msgs": [],
+    "memo": "",
+  })
+
+  stdSignMsg.msgs = [executeMsg]
+  print(stdSignMsg)
+  tx = wallet.key.sign_tx(stdSignMsg)
+  res = client.tx.broadcast(tx)
+  print("scrt to stkdscrt", res)
+
+swapTest()
 
 def queryTest():
   botInfo = BotInfo(cfg[sys.argv[1]])

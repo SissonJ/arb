@@ -64,7 +64,7 @@ def checkScrtBal(botInfo: BotInfo, scrtBal, tradeAmount, logLocation):
     return 
   return
 
-def getSSwapRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
+def getSSwapRatio(botInfo: BotInfo, nonce: Optional[int] = None, tx_encryption_key: Optional[str] = None):
   sswapInfo = botInfo.client.wasm.contract_query(
     botInfo.pairContractAddresses["pair1"], 
     botInfo.pairContractQueries["pair1"], 
@@ -80,7 +80,7 @@ def getSSwapRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key:
     token2Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token2"]
   return token1Amount/token2Amount, token1Amount, token2Amount
 
-def getSiennaRatio(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
+def getSiennaRatio(botInfo: BotInfo, nonce: Optional[int] = None, tx_encryption_key: Optional[str] = None):
   siennaInfo = botInfo.client.wasm.contract_query(
     botInfo.pairContractAddresses["pair2"], 
     botInfo.pairContractQueries["pair2"], 
@@ -161,15 +161,16 @@ def calculateProfitOptimized(s1t2,s1t1,s2t2,s2t1, max, gasFeeScrt):
 def calculateProfitStdk(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encryptionKeyDict):
   ratio, s1t1, s1t2 = getSiennaRatio(botInfo, nonceDict["first"], encryptionKeyDict["first"])
   stkdPrice = getStkdPrice(botInfo, nonceDict["second"], encryptionKeyDict["second"])
-  print(ratio, stkdPrice)
   swapAmount = optimumSwapAmountStdk(s1t1,s1t2,stkdPrice)
   firstSwap = secondSwap = profit = 0
   if(swapAmount > maxAmount):
-    swapAmount = 500
+    swapAmount = maxAmount
+  if( swapAmount < 2 ):
+    swapAmount = 2
   if( swapAmount > 0 ):
-    firstSwap = constantProduct(s1t2, s1t1, swapAmount*.9969)
+    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
     secondSwap = stkdPrice * firstSwap * .998
-    profit = swapAmount - secondSwap - gasFeeScrt
+    profit = secondSwap - swapAmount - gasFeeScrt
   else:
     return -1, -1, 0, 0, 0
   return swapAmount, profit, firstSwap, secondSwap, stkdPrice
@@ -197,7 +198,7 @@ def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
     print(datetime.now(), e )
     return False
 
-def broadcastTxStdk(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConvertSscrt):
+def broadcastTxStkd(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConvertSscrt):
 
   stdSignMsg = StdSignMsg.from_data({
     "chain_id": "secret-4",
@@ -210,13 +211,11 @@ def broadcastTxStdk(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConv
 
   stdSignMsg.msgs = [msgExecuteFirst, msgConvertSscrt, msgExecuteSecond]
 
-  print(stdSignMsg)
-
   tx = botInfo.wallet.key.sign_tx(stdSignMsg)
   try:
-    #res = botInfo.client.tx.broadcast(tx)
+    res = botInfo.client.tx.broadcast(tx)
     #print(res)
-    return 0# res
+    return res
   except Exception as e:
     print(datetime.now(),"BROADCAST TX ERROR")
     print(datetime.now(), e )
@@ -332,8 +331,8 @@ def swapStkd(
     botInfo,
     firstSwapStr,
     stkdBalStr,
-    botInfo.tokenContractAddresses["token1"],
-    botInfo.tokenContractHashes["token1"],
+    botInfo.tokenContractAddresses["token2"],
+    botInfo.tokenContractHashes["token2"],
     nonceDict["first"],
     txEncryptionKeyDict["first"]
   )
@@ -341,21 +340,19 @@ def swapStkd(
   msgSscrtToScrt = botInfo.client.wasm.contract_execute_msg(
     botInfo.accAddr,
     SSCRT_ADDRESS,
-    json.dumps({"redeem":{"amount": firstSwapStr}}),
+    {"redeem":{"amount": firstSwapStr}},
     [],
   )
 
   msgExecuteStdk = botInfo.client.wasm.contract_execute_msg(
     botInfo.accAddr, 
     botInfo.tokenContractAddresses["token2"], 
-    json.dumps({"stake": {}}), 
+    {"stake": {}}, 
     Coins.from_str(firstSwapStr+"uscrt"),#{"denom": "uscrt", "amount": firstSwapStr}], 
-    botInfo.tokenContractHashes["token2"], 
-    nonceDict["second"],
-    txEncryptionKeyDict["second"]
+    botInfo.tokenContractHashes["token2"],
   )
 
-  return broadcastTxStdk(botInfo, msgExecuteSienna, msgExecuteStdk, msgSscrtToScrt)
+  return broadcastTxStkd(botInfo, msgExecuteSienna, msgExecuteStdk, msgSscrtToScrt)
   
 
 def generateTxEncryptionKeys(client: LCDClient):

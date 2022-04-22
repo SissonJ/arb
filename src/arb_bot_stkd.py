@@ -26,19 +26,19 @@ def main():
   gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*3
   height = lastProfit = runningProfit = 0
   txResponse = ""
+  profit = 0
   #client = LCDClient(endpoint, "secret-4")
   #print(getStkdPrice(client))
   #print(client.wasm.contract_query(
   #  "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct",
   #  'pair_info',
   #))
+  print("starting loop")
   while keeplooping:
     try:
-    #add try catch after degugging
       height = sync_next_block(botInfo.client, height)
       txResponse = ""
       amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStdk(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
-      print(profit)
     except:
       pass
     if(profit > 0 ):
@@ -53,10 +53,11 @@ def main():
         runningProfit += profit
         print(datetime.now(), "Success! Running profit:", runningProfit)
       recordTx(botInfo, configStdk["logLocation"], amountToSwap, mintPrice)
-      nonceDictSwap, encryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
       scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       if(scrtBal < 1):
         break
+    nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
+    botInfo.sequence = botInfo.wallet.sequence()
     nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
     botInfo.sequence = botInfo.wallet.sequence()
     keeplooping = True
