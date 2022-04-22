@@ -59,7 +59,7 @@ def main():
     nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
     botInfo.sequence = botInfo.wallet.sequence()
     nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
-    keeplooping = False
+    keeplooping = True
   return
 
 main()
