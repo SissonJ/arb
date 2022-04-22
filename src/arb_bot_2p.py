@@ -62,8 +62,6 @@ async def main():
       if(profit != lastProfit):
         print(datetime.now(), "  height:", height, "  profit:", profit, "swapAmount:", optimumAmountSwapping)
       lastProfit = profit
-      if(height != lastHeight + 1 and lastHeight != 0):
-        print(datetime.now(), "blocks skipped:", height - lastHeight)
       lastHeight = height
       if(profit > 0 and difference > 0):
         txResponse = swapSswap(
@@ -107,4 +105,4 @@ async def main():
       lastLoopIsError = True
       pass
 
-asyncio.get_event_loop().run_until_complete(main())
+asyncio.run(main())
