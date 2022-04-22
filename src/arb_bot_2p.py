@@ -1,16 +1,20 @@
 import asyncio
 from datetime import datetime
 import sys
-import time
+import threading
 import traceback
+import logging
 
 from BotInfo import BotInfo
 from config import config
-from utils import calculateProfitOptimized, sync_next_block
+from utils import calculateProfitOptimized, getSSwapRatio, sync_next_block
 from utils import swapSienna, swapSswap, recordTx, generateTxEncryptionKeys
 from utils_async import runAsyncQueries
 
-async def main():
+def main():
+  logging.basicConfig(filename=config[sys.argv[1]]["logLocation"], level=logging.INFO)
+
+  #logging.info(datetime.now(), "test")
 
   botInfo = BotInfo(config[sys.argv[1]])
 
@@ -39,11 +43,16 @@ async def main():
     try:
       height = sync_next_block(botInfo.client, lastHeight)
       txResponse = ""
-      sswapRatio, sswapt1, sswapt2,siennaRatio, siennat1, siennat2= await runAsyncQueries(
-        botInfo, 
-        nonceDictQuery, 
-        txEncryptionKeyDictQuery
-      )
+      #sswapRatio, sswapt1, sswapt2,siennaRatio, siennat1, siennat2= await runAsyncQueries(
+      #  botInfo, 
+      #  nonceDictQuery, 
+      #  txEncryptionKeyDictQuery
+      #)
+      siennaRatio = siennat1 = siennat2 = 0
+      sswapthread = threading.Thread(target=getSSwapRatio, args=(botInfo, nonceDictQuery["first"], txEncryptionKeyDictQuery["first"],))
+      sswapRatio, sswapt1, sswapt2 = sswapthread.start()
+      sswapthread.join()
+      print(sswapRatio, sswapt1, sswapt2)
     except Exception as e:
       print(datetime.now(), "Error in Queries")
       print(traceback.format_exc())
@@ -94,12 +103,12 @@ async def main():
         else:
           runningProfit += profit
           print(datetime.now(), "Success! Running profit:", runningProfit)
-        recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
+        recordTx(botInfo, config[sys.argv[1]]["csvLocation"], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       botInfo.sequence = botInfo.wallet.sequence()
       nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
       #nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
-      keepLooping = True #set to false for only one run
+      keepLooping = False #set to false for only one run
     except Exception as e:
       print(datetime.now(), "Error in Queries")
       print(traceback.format_exc())
@@ -107,4 +116,4 @@ async def main():
       lastLoopIsError = True
       pass
 
-asyncio.get_event_loop().run_until_complete(main())
+main()

@@ -267,4 +267,10 @@ def queryTest():
   print(ob1)
 
 
-queryTest()
+#queryTest()
+
+def cpTest():
+  poolScrt = 108967.5
+  poolShd = 7868.31
+  print(constantProduct(poolShd,poolScrt, 10))
+cpTest()

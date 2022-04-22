@@ -37,7 +37,8 @@ config = {
       "endpoint": endpoint,
       "chainID": "secret-4"
     },
-    "logLocation": "./../logs/sscrt-shd-csv.csv",
+    "csvLocation": "./../logs/sscrt-shd-csv.csv",
+    "logLocation": "./../logs/sscrt-shd.log",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",

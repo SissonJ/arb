@@ -38,7 +38,7 @@ def main():
       height = sync_next_block(botInfo.client, height)
       txResponse = ""
       amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStdk(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
-      print(profit)
+      #print(profit)
     except:
       pass
     if(profit > 0 ):
