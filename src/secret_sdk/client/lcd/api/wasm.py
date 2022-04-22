@@ -90,7 +90,7 @@ class AsyncWasmAPI(BaseAsyncAPI):
         contract_code_hash: Optional[str] = None,
         nonce: Optional[int]=None, 
         tx_encryption_key: Optional[str]=None,
-        height: Optional[int] = 0, 
+        height: Optional[int] = 0,
     ) -> Any:
         """Runs a QueryMsg on a contract.
 

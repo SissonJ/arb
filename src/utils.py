@@ -31,6 +31,14 @@ def sync_next_block(client:LCDClient, height=0):
       return new_height
     time.sleep(.5)
 
+def generateTxEncryptionKeys(client: LCDClient):
+  nonceDict = {"first":client.utils.generate_new_seed(), "second":client.utils.generate_new_seed()}
+  txEncryptionKeyDict = {
+    "first": client.utils.get_tx_encryption_key(nonceDict["first"]), 
+    "second": client.utils.get_tx_encryption_key(nonceDict["second"])
+  }
+  return nonceDict, txEncryptionKeyDict
+
 def buyScrt(botInfo: BotInfo, scrtBal, logLocation):
   global SSCRT_ADDRESS, SSCRT_KEY
   sscrtBalRes = botInfo.client.wasm.contract_query(SSCRT_ADDRESS, { "balance": { "address": botInfo.accAddr, "key": SSCRT_KEY }})
@@ -307,15 +315,18 @@ def swapSswap(
 def swapStkd(
     botInfo: BotInfo,
     stkdBal, 
-    firstSwap, 
-    secondSwap, 
+    firstSwap,
+    minAmountRec, 
+    #secondSwap, 
     nonceDict, 
     txEncryptionKeyDict,
   ):
 
   stkdBalStr = str(int(stkdBal * 10 ** botInfo.tokenDecimals["token1"]))
   firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
-  secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
+  minAmountRecStr = str(int(stkdBal * 10 ** botInfo.tokenDecimals["token1"]))
+  #secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
+  
   msgExecuteSienna = createMsgExecuteSienna(
     botInfo,
     firstSwapStr,

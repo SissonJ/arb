@@ -1,6 +1,8 @@
 import asyncio
 import base64
 import json
+import time
+from typing import Optional
 from BotInfo import BotInfo
 from env import testnet
 from env import endpoint
@@ -11,6 +13,8 @@ from secret_sdk.core.auth.data.tx import StdFee, StdSignMsg, StdTx
 from secret_sdk.core.coins import Coins
 from secret_sdk.key.key import Key
 from secret_sdk.key.mnemonic import MnemonicKey
+from secret_sdk.client.lcd.lcdclient import AsyncLCDClient
+from secret_sdk.core.auth.data.tx import StdTx
 from utils import calculateProfitCP, constantProduct, getSiennaRatio, createMsgExecuteSienna
 from miscreant.aes.siv import SIV
 from datetime import datetime
@@ -130,6 +134,50 @@ def swapSimulation():
   print(res)
 #swapSimulation()
 
+async def getSSwapRatioAsync(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
+  print("SSwap",nonce, tx_encryption_key, botInfo.pairContractAddresses["pair1"])
+  sswapInfo = await botInfo.client.wasm.contract_query(
+    botInfo.pairContractAddresses["pair1"], 
+    botInfo.pairContractQueries["pair1"], 
+    botInfo.pairContractHash["pair1"], 
+    nonce, 
+    tx_encryption_key,
+  )
+  if( botInfo.pairToken1First["pair1"] ):
+    token1Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(sswapInfo['assets'][1]['amount']) * 10**-botInfo.tokenDecimals["token2"]
+  else:
+    token1Amount = float(sswapInfo['assets'][1]['amount']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(sswapInfo['assets'][0]['amount']) * 10**-botInfo.tokenDecimals["token2"]
+  print(token1Amount/token2Amount, token1Amount, token2Amount)
+  return token1Amount/token2Amount, token1Amount, token2Amount
+
+async def getSiennaRatioAsync(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
+  siennaInfo = await botInfo.client.wasm.contract_query(
+    botInfo.pairContractAddresses["pair2"], 
+    botInfo.pairContractQueries["pair2"], 
+    botInfo.pairContractHash["pair2"], 
+    nonce, 
+    tx_encryption_key
+  )
+  if(botInfo.pairToken1First["pair2"] ):
+    token1Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token2"]
+  else:
+    token1Amount = float(siennaInfo['pair_info']['amount_1']) * 10**-botInfo.tokenDecimals["token1"]
+    token2Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token2"]
+  print(token1Amount/token2Amount, token1Amount, token2Amount)
+  return token1Amount/token2Amount, token1Amount, token2Amount
+
+async def runAsyncQueries(botInfo, nonceDict, txEncryptionKeyDict):
+  print("runQ", nonceDict["first"], txEncryptionKeyDict["first"])
+  task1 = asyncio.create_task(getSSwapRatioAsync(botInfo, 0, ""))#, nonceDictQuery["first"], txEncryptionKeyDictQuery["first"])
+  task2 = asyncio.create_task(getSiennaRatioAsync(botInfo, 0, ""))#, nonceDictQuery["second"], txEncryptionKeyDictQuery["second"])
+  SSratio, SStoken1Amount, SStoken2Amount = await task1
+  SIratio, SItoken1Amount, SItoken2Amount = await task2
+  await botInfo.client.session.close()
+  return SSratio, SIratio, SStoken1Amount, SItoken1Amount, SStoken2Amount, SItoken1Amount
+
 def oneRun():
   cfg[sys.argv[1]]["mkSeed"] = mkSeed2
 
@@ -171,7 +219,7 @@ def oneRun():
   if(height != lastHeight + 1 and lastHeight != 0):
     print(datetime.now(), "blocks skipped:", height - lastHeight)
   lastHeight = height
-  if(difference > 0):
+  if(False and difference > 0):
     txResponse = swapSswap(
       botInfo,
       10,
@@ -180,7 +228,7 @@ def oneRun():
       nonceDict,
       txEncryptionKeyDict,
     )
-  if(difference < 0):
+  if(False and difference < 0):
     txResponse = swapSienna(
       botInfo,
       10,
@@ -237,4 +285,25 @@ def swapTest():
 
 swapTest()
 
+def queryTest():
+  botInfo = BotInfo(cfg[sys.argv[1]])
+  nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+  start = time.time()
+  getSSwapRatio(botInfo, 0, "")#, nonceDictQuery["first"], txEncryptionKeyDictQuery["first"])
+  getSiennaRatio(botInfo, 0, "")#, nonceDictQuery["second"], txEncryptionKeyDictQuery["second"])
+  end = time.time()
+  print(end - start)
+  botInfo.client = AsyncLCDClient(endpoint, "secret-4")
+  start = time.time()
+  #asyncio.gather(
+  #  getSSwapRatioAsync(botInfo, 0, ""),
+  #  getSiennaRatioAsync(botInfo, 0, "")
+  #)
+  ob1 = asyncio.get_event_loop().run_until_complete(runAsyncQueries(botInfo, nonceDictQuery, txEncryptionKeyDictQuery))
+  #ob2 = asyncio.get_event_loop().run_until_complete(runAsyncQueries(botInfo))
+  end = time.time() 
+  print(end - start)
+  print(ob1)
 
+
+queryTest()
