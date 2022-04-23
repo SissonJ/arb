@@ -24,6 +24,7 @@ from BotInfo import BotInfo
 from config import config as cfg
 from utils import generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio 
 from utils import calculateProfit, swapSienna, swapSswap, recordTx
+from utils_async import getSSwapRatioAsync
 
 config = {
   "mkSeed": mkSeed,
@@ -134,7 +135,7 @@ def swapSimulation():
   print(res)
 #swapSimulation()
 
-async def getSSwapRatioAsync(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
+async def XgetSSwapRatioAsync(botInfo: BotInfo, nonce: Optional[int] = 0, tx_encryption_key: Optional[str] = ""):
   print("SSwap",nonce, tx_encryption_key, botInfo.pairContractAddresses["pair1"])
   sswapInfo = await botInfo.client.wasm.contract_query(
     botInfo.pairContractAddresses["pair1"], 
@@ -283,7 +284,7 @@ def swapTest():
   res = client.tx.broadcast(tx)
   print("scrt to stkdscrt", res)
 
-swapTest()
+#swapTest()
 
 def queryTest():
   botInfo = BotInfo(cfg[sys.argv[1]])
@@ -306,4 +307,25 @@ def queryTest():
   print(ob1)
 
 
-queryTest()
+#queryTest()
+
+async def generateTxEncryptionKeysAsync(client: AsyncLCDClient):
+  nonceDict = {"first":client.utils.generate_new_seed(), "second":client.utils.generate_new_seed()}
+  txEncryptionKeyDict = {"first": await client.utils.get_tx_encryption_key(nonceDict["first"]), "second": await client.utils.get_tx_encryption_key(nonceDict["second"])}
+  return nonceDict, txEncryptionKeyDict
+
+async def asyncQuery():
+  botInfo = BotInfo(cfg[sys.argv[1]])
+  nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeysAsync(botInfo.asyncClient)
+  print(await getSSwapRatioAsync(botInfo, nonceDictQuery["first"], txEncryptionKeyDictQuery["first"]))
+  return
+
+asyncio.run(asyncQuery())
+
+def regQuery():
+  botInfo = BotInfo(cfg[sys.argv[1]])
+  nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+  print(getSSwapRatio(botInfo, nonceDictQuery["first"], txEncryptionKeyDictQuery["first"]))
+  return
+
+#regQuery()

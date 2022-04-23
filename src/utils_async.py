@@ -37,8 +37,13 @@ async def getSiennaRatioAsync(botInfo: BotInfo, nonce: Optional[int] = 0, tx_enc
   return token1Amount/token2Amount, token1Amount, token2Amount
 
 async def runAsyncQueries(botInfo: BotInfo, nonceDict, txEncryptionKeyDict):
-  task1 = asyncio.create_task(getSSwapRatioAsync(botInfo))#, nonceDict["first"], txEncryptionKeyDict["first"]))
-  task2 = asyncio.create_task(getSiennaRatioAsync(botInfo))#, nonceDict["second"], txEncryptionKeyDict["second"]))
+  task1 = asyncio.create_task(getSSwapRatioAsync(botInfo, nonceDict["first"], txEncryptionKeyDict["first"]))
+  task2 = asyncio.create_task(getSiennaRatioAsync(botInfo, nonceDict["second"], txEncryptionKeyDict["second"]))
   sswapRatio, sswapt1, sswapt2 = await task1
   siennaRatio, siennat1, siennat2 = await task2
   return sswapRatio, sswapt1, sswapt2, siennaRatio, siennat1, siennat2
+
+async def generateTxEncryptionKeysAsync(client: AsyncLCDClient):
+  nonceDict = {"first":client.utils.generate_new_seed(), "second":client.utils.generate_new_seed()}
+  txEncryptionKeyDict = {"first": await client.utils.get_tx_encryption_key(nonceDict["first"]), "second": await client.utils.get_tx_encryption_key(nonceDict["second"])}
+  return nonceDict, txEncryptionKeyDict

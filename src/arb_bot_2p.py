@@ -8,14 +8,14 @@ from BotInfo import BotInfo
 from config import config
 from utils import calculateProfitOptimized, sync_next_block
 from utils import swapSienna, swapSswap, recordTx, generateTxEncryptionKeys
-from utils_async import runAsyncQueries
+from utils_async import runAsyncQueries, generateTxEncryptionKeysAsync
 
 async def main():
 
   botInfo = BotInfo(config[sys.argv[1]])
 
   nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
-  nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+  nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeysAsync(botInfo.asyncClient)
 
   sscrtBal = 0
   keepLooping = True
@@ -33,13 +33,13 @@ async def main():
     if lastLoopIsError:
       botInfo.sequence = botInfo.wallet.sequence()
       nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
-      #nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+      nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeysAsync(botInfo.asyncClient)
       lastLoopIsError = False
-      pass
+      continue
     try:
       height = sync_next_block(botInfo.client, lastHeight)
       txResponse = ""
-      sswapRatio, sswapt1, sswapt2,siennaRatio, siennat1, siennat2= await runAsyncQueries(
+      sswapRatio, sswapt1, sswapt2,siennaRatio, siennat1, siennat2 = await runAsyncQueries(
         botInfo, 
         nonceDictQuery, 
         txEncryptionKeyDictQuery
@@ -49,7 +49,7 @@ async def main():
       print(traceback.format_exc())
       print( e )
       lastLoopIsError = True
-      pass
+      continue
     try:
       difference = siennaRatio - sswapRatio 
       profit= firstSwap = secondSwap = 0
@@ -96,13 +96,13 @@ async def main():
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       botInfo.sequence = botInfo.wallet.sequence()
       nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
-      #nonceDictQuery, txEncryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
+      nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeysAsync(botInfo.asyncClient)
       keepLooping = True #set to false for only one run
     except Exception as e:
       print(datetime.now(), "Error in Queries")
       print(traceback.format_exc())
       print( e )
       lastLoopIsError = True
-      pass
+      continue
 
 asyncio.run(main())
