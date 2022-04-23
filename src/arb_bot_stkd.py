@@ -19,7 +19,7 @@ def main():
   keeplooping = True
   botInfo = BotInfo(configStdk)
 
-  maxAmount = 200
+  maxAmount = 400
 
   nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
   nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
