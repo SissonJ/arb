@@ -1,4 +1,5 @@
 import base64
+from math import sqrt
 import time
 import csv
 import json
@@ -117,7 +118,7 @@ def optimumProfit(poolBuy1, poolSell1, poolBuy2, poolSell2):
   return optimized
 
 def optimumSwapAmountStdk(poolBuy, poolSell, mintPrice):
-  optimized = 0.0005015548199418196 * (1981.8642738593378 * mintPrice**.5 * poolBuy**.5 * poolSell**.5 - 2000 * poolSell)
+  optimized = -(1/sqrt(mintPrice)) * 0.00020062192797672785 * (-4987.249241816575 * sqrt(poolBuy) * sqrt(poolSell) + 5000 * sqrt(mintPrice) * poolSell)
   return optimized
 
 def calculateProfitCP(s1t2, s1t1, s2t2, s2t1, amountSwapped, gasFeeScrt):
@@ -169,7 +170,7 @@ def calculateProfitStdk(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encr
     swapAmount = 2
   if( swapAmount > 0 ):
     firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
-    secondSwap = stkdPrice * firstSwap * .998
+    secondSwap = ( firstSwap * .998 ) /  stkdPrice
     profit = secondSwap - swapAmount - gasFeeScrt
   else:
     return -1, -1, 0, 0, 0
@@ -388,6 +389,8 @@ def recordTx(botInfo: BotInfo, logLocation, amountSwapped, ratio):
   with open(logLocation, mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
     logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped])
+
+  return t2Bal
 
 
 def getBalances(botInfo: BotInfo):

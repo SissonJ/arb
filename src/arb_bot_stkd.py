@@ -19,7 +19,7 @@ def main():
   keeplooping = True
   botInfo = BotInfo(configStdk)
 
-  maxAmount = 400
+  maxAmount = 300
 
   nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
   nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
@@ -40,11 +40,11 @@ def main():
       txResponse = ""
       amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStdk(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
     except:
-      pass
-    if(profit > 0 ):
+      continue
+    if(profit > 1 ):
       txResponse = swapStkd(botInfo, amountToSwap, firstSwap, secondSwap, nonceDictSwap, encryptionKeySwap)
-    if(profit != lastProfit):
-       print(datetime.now(), "  height:", height, "  profit:", profit)
+    if(profit != lastProfit + .1):
+       print(datetime.now(), "  height:", height, "  profit:", profit, "swapamount:", amountToSwap)
     lastProfit = profit
     if( txResponse != ""):
       if(not txResponse or txResponse.is_tx_error()):
@@ -52,7 +52,7 @@ def main():
       else:
         runningProfit += profit
         print(datetime.now(), "Success! Running profit:", runningProfit)
-      recordTx(botInfo, configStdk["logLocation"], amountToSwap, mintPrice)
+      maxAmount = recordTx(botInfo, configStdk["logLocation"], amountToSwap, mintPrice) - 5
       scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       if(scrtBal < 1):
         break

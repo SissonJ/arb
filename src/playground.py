@@ -15,7 +15,7 @@ from secret_sdk.key.key import Key
 from secret_sdk.key.mnemonic import MnemonicKey
 from secret_sdk.client.lcd.lcdclient import AsyncLCDClient
 from secret_sdk.core.auth.data.tx import StdTx
-from utils import calculateProfitCP, constantProduct, getSiennaRatio, createMsgExecuteSienna
+from utils import calculateProfitCP, constantProduct, getSiennaRatio, createMsgExecuteSienna, optimumSwapAmountStdk
 from miscreant.aes.siv import SIV
 from datetime import datetime
 import sys
@@ -320,7 +320,7 @@ async def asyncQuery():
   print(await getSSwapRatioAsync(botInfo, nonceDictQuery["first"], txEncryptionKeyDictQuery["first"]))
   return
 
-asyncio.run(asyncQuery())
+#asyncio.run(asyncQuery())
 
 def regQuery():
   botInfo = BotInfo(cfg[sys.argv[1]])
@@ -329,3 +329,4 @@ def regQuery():
   return
 
 #regQuery()
+print(optimumSwapAmountStdk(319600, 310835.328445, 1.02))
