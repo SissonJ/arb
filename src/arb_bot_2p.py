@@ -59,9 +59,9 @@ async def main():
       if(difference < 0 ):
         optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfitOptimized(
           siennat2, siennat1, sswapt2, sswapt1, maxAmountSwapping, gasFeeScrt)
-      if(profit != lastProfit):
+      if(profit > lastProfit + .1 or profit < lastProfit - .1 or profit > 0):
         print(datetime.now(), "  height:", height, "  profit:", profit, "swapAmount:", optimumAmountSwapping)
-      lastProfit = profit
+        lastProfit = profit
       lastHeight = height
       if(profit > 0 and difference > 0):
         txResponse = swapSswap(

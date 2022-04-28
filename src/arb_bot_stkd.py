@@ -43,9 +43,9 @@ def main():
       continue
     if(profit > 1 ):
       txResponse = swapStkd(botInfo, amountToSwap, firstSwap, secondSwap, nonceDictSwap, encryptionKeySwap)
-    if(profit != lastProfit + .1):
-       print(datetime.now(), "  height:", height, "  profit:", profit, "swapamount:", amountToSwap)
-    lastProfit = profit
+    if(profit > lastProfit + .1 or profit < lastProfit - .1 or profit > 0):
+      print(datetime.now(), "  height:", height, "  profit:", profit, "swapamount:", amountToSwap)
+      lastProfit = profit
     if( txResponse != ""):
       if(not txResponse or txResponse.is_tx_error()):
         print(datetime.now(), "Failed" )
