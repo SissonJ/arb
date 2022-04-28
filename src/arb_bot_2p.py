@@ -21,7 +21,7 @@ async def main():
   keepLooping = True
   txResponse = ""
   runningProfit = 0
-  maxAmountSwapping = 600
+  maxAmountSwapping = 650
   optimumAmountSwapping = 0
   height = 0
   lastHeight = 0
