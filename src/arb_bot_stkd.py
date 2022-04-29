@@ -1,19 +1,8 @@
-from secret_sdk.client.lcd.lcdclient import LCDClient
-from utils import calculateProfitStdk, recordTx, swapStkd, optimumSwapAmountStdk,generateTxEncryptionKeys, sync_next_block
-#from utils import getStkdPrice
+from utils import recordTx, generateTxEncryptionKeys, sync_next_block
+from utils_stkd import calculateProfitStkd, swapStkd
 from datetime import datetime
-from time import time
 from BotInfo import BotInfo
 from config import configStdk
-from env import endpoint
-import time
-
-def getStkdPrice(client: LCDClient):
-  res = client.wasm.contract_query(
-    "secret1k6u0cy4feepm6pehnz804zmwakuwdapm69tuc4", 
-    { "staking_info": { "time": round(time.time()) } }
-  )
-  return float(res["staking_info"]["price"])*10**-6
 
 def main():
   keeplooping = True
@@ -38,10 +27,10 @@ def main():
     try:
       height = sync_next_block(botInfo.client, height)
       txResponse = ""
-      amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStdk(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
+      amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStkd(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
     except:
       continue
-    if(profit > 1 ):
+    if(profit > .05 ):
       txResponse = swapStkd(botInfo, amountToSwap, firstSwap, secondSwap, nonceDictSwap, encryptionKeySwap)
     if(profit > lastProfit + .1 or profit < lastProfit - .1 or profit > 0):
       print(datetime.now(), "  height:", height, "  profit:", profit, "swapamount:", amountToSwap)

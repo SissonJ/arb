@@ -115,6 +115,42 @@ config = {
       "price": "050001uscrt",
     },
   },
+  "sscrt-susdt-config": {
+    "mkSeed": mkSeed,
+    "pairAddrs": {
+      "pair1": "secret1gyct75dc2pf20vtj3l86k2jxg79mffyh9ljve3", #SSWAP_SSCRT_SUSDT_PAIR
+      "pair2": "secret1kdrjlga9qjazf0rv7ue8alyglepljlexwumv68", #SIENNA_SSCRT_SUSDT_PAIR
+    },
+    "pairQueries": {
+      "pair1": { 'pool': {} }, #SSWAP_QUERY
+      "pair2": 'pair_info', #SIENNA_QUERY
+    },
+    "token1First": {
+      "pair1": True,
+      "pair2": True,
+    },
+    "tokenAddrs": {
+      "token1": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", #SSCRT_ADDRESS
+      "token2": "secret18wpjn83dayu4meu6wnn29khfkwdxs7kyrz9c8f", #SUSDT_ADDRESS
+    },
+    "tokenKeys":{
+      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
+      "token2": "25c5bb499a37235d8d91137666be433f91a6cad5bc864868ef6c4fb556a6a1f3", #SUSDT_API_KEY
+    },
+    "tokenDecimals":{
+      "token1": 6,
+      "token2": 6,
+    },
+    "clientInfo": {
+      "endpoint": endpoint,
+      "chainID": "secret-4"
+    },
+    "logLocation": "./../logs/sscrt-susdt-csv.csv",
+    "fee": {
+      "gas": 200001,
+      "price": "050001uscrt",
+    },
+  },
 }
 
 configStdk = {
@@ -150,8 +186,8 @@ configStdk = {
     },
     "logLocation": "./../logs/sscrt-stkd-csv.csv",
     "fee": {
-      "gas": 500001,
-      "price": "125000uscrt",
+      "gas": 400001,
+      "price": "100000uscrt",
     },
   #},
 }

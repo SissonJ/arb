@@ -1,14 +1,16 @@
+import asyncio
 from datetime import datetime
 import time
 from secret_sdk.client.lcd.lcdclient import LCDClient
 
-from config import config
+from config import config, configStdk
 
 from BotInfo import BotInfo
 from env import endpoint
 from utils import getSSwapRatio, getSiennaRatio, calculateProfit, sync_next_block, optimumProfit
+from utils_stkd import arbTrackerStkd
 
-def main():
+async def main():
   client = LCDClient(endpoint, 'secret-4')
   lastHeight = 0
   amountSwapping = 40
@@ -19,6 +21,7 @@ def main():
   print("Starting loop")
   while True:
     time.sleep(5)
+    lastProfitStkd = 0
     lastHeight = sync_next_block(client, lastHeight)
     for cfg in config:
       botInfo = BotInfo(config[cfg])
@@ -41,5 +44,12 @@ def main():
         print("sswap:", s1ratio, "sienna", s2ratio )
         print()
         lastProfit[cfg] = profit
-
-main()
+      await botInfo.asyncClient.session.close()
+    botInfoStkd = BotInfo(configStdk)
+    profitStkd = arbTrackerStkd(botInfoStkd, {"first":None, "second":None}, {"first":None, "second":None})
+    if(profit > lastProfitStkd + .01 or profit < lastProfitStkd - .01 or profit > 0):
+      print(datetime.now(), "height", lastHeight, "sscrt-stkd-config" , "profit:", profitStkd, sep="\t")
+      lastProfitStkd = profitStkd
+    await botInfoStkd.asyncClient.session.close()
+    print()
+asyncio.run(main())

@@ -1,7 +1,6 @@
 import asyncio
 from datetime import datetime
 import sys
-import time
 import traceback
 
 from BotInfo import BotInfo
@@ -59,11 +58,11 @@ async def main():
       if(difference < 0 ):
         optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfitOptimized(
           siennat2, siennat1, sswapt2, sswapt1, maxAmountSwapping, gasFeeScrt)
-      if(profit > lastProfit + .1 or profit < lastProfit - .1 or profit > 0):
+      if(profit > lastProfit + .1 or profit < lastProfit - .1 or profit > .05):
         print(datetime.now(), "  height:", height, "  profit:", profit, "swapAmount:", optimumAmountSwapping)
         lastProfit = profit
       lastHeight = height
-      if(profit > 0 and difference > 0):
+      if(profit > .05 and difference > 0):
         txResponse = swapSswap(
           botInfo,
           optimumAmountSwapping,
@@ -72,7 +71,7 @@ async def main():
           nonceDictSwap,
           txEncryptionKeyDictSwap,
         )
-      if(profit > 0 and difference < 0):
+      if(profit > .05 and difference < 0):
         txResponse = swapSienna(
           botInfo,
           optimumAmountSwapping,

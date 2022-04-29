@@ -12,10 +12,6 @@ from config import sscrtAdresses
 
 from secret_sdk.client.lcd import LCDClient
 from secret_sdk.core.auth.data.tx import StdSignMsg
-from secret_sdk.core.coin import Coin
-from secret_sdk.core.coins import Coins
-from secret_sdk.key.mnemonic import MnemonicKey
-from secret_sdk.client.lcd.wallet import Wallet
 
 SSCRT_ADDRESS = sscrtAdresses["SSCRT_ADDRESS"]
 SSCRT_KEY = sscrtAdresses["SSCRT_KEY"]
@@ -97,16 +93,6 @@ def getSiennaRatio(botInfo: BotInfo, nonce: Optional[int] = None, tx_encryption_
     token2Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token2"]
   return token1Amount/token2Amount, token1Amount, token2Amount
 
-def getStkdPrice(botInfo: BotInfo, nonce, txEncryptionKey):
-  res = botInfo.client.wasm.contract_query(
-    botInfo.tokenContractAddresses["token2"], 
-    { "staking_info": { "time": round(time.time()) } },
-    #botInfo.pairContractHash["pair2"],
-    #nonce,
-    #txEncryptionKey,
-  )
-  return float(res["staking_info"]["price"])*10**-6
-
 def constantProduct(poolBuy, poolSell, x):
   out = -(poolBuy * poolSell)/(poolSell + x) + poolBuy
   return out
@@ -115,10 +101,6 @@ def optimumProfit(poolBuy1, poolSell1, poolBuy2, poolSell2):
   optimized = (9.380602724198101*10**-6*(-1.06613651635*10**11 * poolBuy1 * poolSell1 * poolSell2-1.06934455*10**11 * poolSell1 * poolSell2**2+1.0660297422966704*10**8 *
     (994009 * poolBuy1**3 * poolSell1 * poolBuy2 * poolSell2 + 1.994*10**6 * poolBuy1**2 * poolSell1 * poolBuy2 *poolSell2**2 + 
     1*10**6 * poolBuy1 * poolSell1 * poolBuy2 * poolSell2**3)**.5))/(994009 * poolBuy1**2 + 1.994*10**6 *poolBuy1*poolSell2 + 1*10**6 * poolSell2**2)
-  return optimized
-
-def optimumSwapAmountStdk(poolBuy, poolSell, mintPrice):
-  optimized = -(1/sqrt(mintPrice)) * 0.00020062192797672785 * (-4987.249241816575 * sqrt(poolBuy) * sqrt(poolSell) + 5000 * sqrt(mintPrice) * poolSell)
   return optimized
 
 def calculateProfitCP(s1t2, s1t1, s2t2, s2t1, amountSwapped, gasFeeScrt):
@@ -159,23 +141,6 @@ def calculateProfitOptimized(s1t2,s1t1,s2t2,s2t1, max, gasFeeScrt):
   profit = secondSwap - amountToSwap - gasFeeScrt
   return amountToSwap, profit, firstSwap, secondSwap
 
-def calculateProfitStdk(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encryptionKeyDict):
-  ratio, s1t1, s1t2 = getSiennaRatio(botInfo, nonceDict["first"], encryptionKeyDict["first"])
-  stkdPrice = getStkdPrice(botInfo, nonceDict["second"], encryptionKeyDict["second"])
-  swapAmount = optimumSwapAmountStdk(s1t1,s1t2,stkdPrice)
-  firstSwap = secondSwap = profit = 0
-  if(swapAmount > maxAmount):
-    swapAmount = maxAmount
-  if( swapAmount < 2 ):
-    swapAmount = 2
-  if( swapAmount > 0 ):
-    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
-    secondSwap = ( firstSwap * .998 ) /  stkdPrice
-    profit = secondSwap - swapAmount - gasFeeScrt
-  else:
-    return -1, -1, 0, 0, 0
-  return swapAmount, profit, firstSwap, secondSwap, stkdPrice
-
 def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
 
   stdSignMsg = StdSignMsg.from_data({
@@ -198,30 +163,6 @@ def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
     print(datetime.now(),"BROADCAST TX ERROR")
     print(datetime.now(), e )
     return False
-
-def broadcastTxStkd(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConvertSscrt):
-
-  stdSignMsg = StdSignMsg.from_data({
-    "chain_id": "secret-4",
-    "account_number": botInfo.accountNum,
-    "sequence": botInfo.sequence,
-    "fee": botInfo.fee.to_data(),
-    "msgs": [],
-    "memo": "",
-  })
-
-  stdSignMsg.msgs = [msgExecuteFirst, msgConvertSscrt, msgExecuteSecond]
-
-  tx = botInfo.wallet.key.sign_tx(stdSignMsg)
-  try:
-    res = botInfo.client.tx.broadcast(tx)
-    #print(res)
-    return res
-  except Exception as e:
-    print(datetime.now(),"BROADCAST TX ERROR")
-    print(datetime.now(), e )
-    return False
-
 
 def createMsgExecuteSswap(botInfo: BotInfo, expectedReturn, amountToSwap, contractAddr, contractHash, nonce, txEncryptionKey):
   msgSswap = json.dumps({"swap":{"expected_return":expectedReturn}})
@@ -311,50 +252,7 @@ def swapSswap(
     txEncryptionKeyDict["second"]
   )
 
-  return broadcastTx(botInfo, msgExecuteSswap, msgExecuteSienna)
-
-def swapStkd(
-    botInfo: BotInfo,
-    stkdBal, 
-    firstSwap,
-    minAmountRec, 
-    #secondSwap, 
-    nonceDict, 
-    txEncryptionKeyDict,
-  ):
-
-  stkdBalStr = str(int(stkdBal * 10 ** botInfo.tokenDecimals["token1"]))
-  firstSwapStr = str(int(firstSwap * 10 ** botInfo.tokenDecimals["token2"]))
-  minAmountRecStr = str(int(stkdBal * 10 ** botInfo.tokenDecimals["token1"]))
-  #secondSwapStr = str(int(secondSwap * 10 ** botInfo.tokenDecimals["token1"]))
-  
-  msgExecuteSienna = createMsgExecuteSienna(
-    botInfo,
-    firstSwapStr,
-    stkdBalStr,
-    botInfo.tokenContractAddresses["token2"],
-    botInfo.tokenContractHashes["token2"],
-    nonceDict["first"],
-    txEncryptionKeyDict["first"]
-  )
-
-  msgSscrtToScrt = botInfo.client.wasm.contract_execute_msg(
-    botInfo.accAddr,
-    SSCRT_ADDRESS,
-    {"redeem":{"amount": firstSwapStr}},
-    [],
-  )
-
-  msgExecuteStdk = botInfo.client.wasm.contract_execute_msg(
-    botInfo.accAddr, 
-    botInfo.tokenContractAddresses["token2"], 
-    {"stake": {}}, 
-    Coins.from_str(firstSwapStr+"uscrt"),#{"denom": "uscrt", "amount": firstSwapStr}], 
-    botInfo.tokenContractHashes["token2"],
-  )
-
-  return broadcastTxStkd(botInfo, msgExecuteSienna, msgExecuteStdk, msgSscrtToScrt)
-  
+  return broadcastTx(botInfo, msgExecuteSswap, msgExecuteSienna)  
 
 def generateTxEncryptionKeys(client: LCDClient):
   nonceDict = {"first":client.utils.generate_new_seed(), "second":client.utils.generate_new_seed()}
