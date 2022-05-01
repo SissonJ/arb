@@ -136,8 +136,8 @@ def calculateProfitOptimized(s1t2,s1t1,s2t2,s2t1, max, gasFeeScrt):
     amountToSwap = max
   if (amountToSwap < 1):
     amountToSwap = 1
-  firstSwap = constantProduct(s1t2, s1t1, amountToSwap*.9969)
-  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.997) * .9999
+  firstSwap = constantProduct(s1t2, s1t1, amountToSwap*.996)
+  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.996)
   profit = secondSwap - amountToSwap - gasFeeScrt
   return amountToSwap, profit, firstSwap, secondSwap
 
@@ -160,8 +160,9 @@ def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
     #print(res)
     return res
   except Exception as e:
-    print(datetime.now(),"BROADCAST TX ERROR")
-    print(datetime.now(), e )
+    with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
+      logWriter = csv.writer(csv_file, delimiter=',')
+      logWriter.writerow([datetime.now().date(), datetime.now().time(),"BROADCAST TX ERROR"], e)
     return False
 
 def createMsgExecuteSswap(botInfo: BotInfo, expectedReturn, amountToSwap, contractAddr, contractHash, nonce, txEncryptionKey):
@@ -279,14 +280,18 @@ def txHandle(logLocation, txResponse, profit, runningProfit, lastHeight, amountS
 
   return True
 
-def recordTx(botInfo: BotInfo, logLocation, amountSwapped, ratio):
+def recordTx(botInfo: BotInfo, pair, amountSwapped, ratio):
   scrtBal, t1Bal, t2Bal = getBalances(botInfo)
   res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=secret&vs_currencies=usd")
   data = res.json()
 
-  with open(logLocation, mode="a", newline="") as csv_file:
+  with open( botInfo.logs["csv"], mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
     logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped])
+  with open( botInfo.logs["central"], mode="a", newline="") as csv_file:
+    logWriter = csv.writer(csv_file, delimiter=',')
+    #date, time, pair, sscrt/usd, scrt bal, sscrtBal, t2/sscrt, t2Bal, amount traded
+    logWriter.writerow([datetime.now().date(), datetime.now().time(), pair,  data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped])
 
   return t2Bal
 

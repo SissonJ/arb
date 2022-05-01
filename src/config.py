@@ -38,6 +38,8 @@ config = {
       "chainID": "secret-4"
     },
     "logLocation": "./../logs/sscrt-shd-csv.csv",
+    "centralLogLoc": "./../logs/log.csv",
+    "outputLogLoc": "./../logs/sscrt-shd.log",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",
@@ -74,6 +76,8 @@ config = {
       "chainID": "secret-4"
     },
     "logLocation": "./../logs/sscrt-seth-csv.csv",
+    "centralLogLoc": "./../logs/log.csv",
+    "outputLogLoc": "./../logs/sscrt-seth.log",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",
@@ -110,6 +114,8 @@ config = {
       "chainID": "secret-4"
     },
     "logLocation": "./../logs/sscrt-swbtc-csv.csv",
+    "centralLogLoc": "./../logs/log.csv",
+    "outputLogLoc": "./../logs/sscrt-seth.log",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",
@@ -146,6 +152,8 @@ config = {
       "chainID": "secret-4"
     },
     "logLocation": "./../logs/sscrt-susdt-csv.csv",
+    "centralLogLoc": "./../logs/log.csv",
+    "outputLogLoc": "./../logs/sscrt-susdt.log",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",
@@ -185,6 +193,8 @@ configStdk = {
       "chainID": "secret-4"
     },
     "logLocation": "./../logs/sscrt-stkd-csv.csv",
+    "centralLogLoc": "./../logs/log.csv",
+    "outputLogLoc": "./../logs/sscrt-stkd.log",
     "fee": {
       "gas": 400001,
       "price": "100000uscrt",
@@ -224,6 +234,8 @@ configStdk = {
       "chainID": "secret-4"
     },
     "logLocation": "./../logs/sscrt-seth-csv.csv",
+    "centralLogLoc": "./../logs/log.csv",
+    "outputLogLoc": "./../logs/sscrt-seth.log",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",
@@ -262,6 +274,8 @@ configStdk = {
       "chainID": "secret-4"
     },
     "logLocation": "./../logs/sscrt-sienna-csv.csv",
+    "centralLogLoc": "./../logs/log.csv",
+    "outputLogLoc": "./../logs/sscrt-sienna.log",
     "fee": {
       "gas": 200001,
       "price": "050001uscrt",

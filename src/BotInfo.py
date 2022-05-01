@@ -21,6 +21,7 @@ class BotInfo:
   fee: StdFee #(botConfig["fee"]["gas"], botConfig["fee"]["price"])
   accountNum: int #wallet.account_number(),
   sequence: int #wallet.sequence(),
+  logs: Dict[str, str, str]
   #botConfig: Dict[str, Dict[str, str], Dict[str, str], Dict[str, str], Dict[str, str], str, Dict[int, str]]
 
   def __init__(self, botConfig):
@@ -47,4 +48,9 @@ class BotInfo:
     res = self.client.auth.account_info(self.wallet.key.acc_address)
     self.accountNum = res.account_number
     self.sequence = res.sequence
+    self.logs = {
+      "csv": botConfig["logLocation"],
+      "central": botConfig["centralLogLoc"],
+      "output": botConfig["outputLogLoc"],
+    }
     

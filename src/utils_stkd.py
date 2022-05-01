@@ -1,4 +1,5 @@
 from cmath import sqrt
+import csv
 from datetime import datetime
 import time
 from BotInfo import BotInfo
@@ -21,7 +22,7 @@ def getStkdPrice(botInfo: BotInfo, nonce, txEncryptionKey):
   return float(res["staking_info"]["price"])*10**-6
 
 def optimumSwapAmountStkd(poolBuy, poolSell, mintPrice):
-  optimized = -(1/sqrt(mintPrice)) * 0.00020062192797672785 * (-4987.249241816575 * sqrt(poolBuy) * sqrt(poolSell) + 5000 * sqrt(mintPrice) * poolSell)
+  optimized = -(1/sqrt(mintPrice).real) * 0.00020062192797672785 * (-4987.249241816575 * sqrt(poolBuy).real * sqrt(poolSell).real + 5000 * sqrt(mintPrice).real * poolSell)
   return optimized
 
 def calculateProfitStkd(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encryptionKeyDict):
@@ -34,8 +35,8 @@ def calculateProfitStkd(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encr
   if( swapAmount < 2 ):
     swapAmount = 2
   if( swapAmount > 0 ):
-    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
-    secondSwap = ( firstSwap * .998 ) /  stkdPrice
+    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.996)
+    secondSwap = ( firstSwap * .997 ) /  stkdPrice
     profit = secondSwap - swapAmount - gasFeeScrt
   else:
     return -1, -1, 0, 0, 0
@@ -74,8 +75,9 @@ def broadcastTxStkd(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConv
     #print(res)
     return res
   except Exception as e:
-    print(datetime.now(),"BROADCAST TX ERROR")
-    print(datetime.now(), e )
+    with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
+      logWriter = csv.writer(csv_file, delimiter=',')
+      logWriter.writerow([datetime.now().date(), datetime.now().time(),"BROADCAST TX ERROR"], e)
     return False
 
 def swapStkd(
