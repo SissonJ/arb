@@ -45,16 +45,14 @@ def calculateProfitStkd(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encr
 def arbTrackerStkd(botInfo: BotInfo, nonceDict, encryptionKeyDict): 
     ratio, s1t1, s1t2 = getSiennaRatio(botInfo, nonceDict["first"], encryptionKeyDict["first"])
     stkdPrice = getStkdPrice(botInfo, nonceDict["second"], encryptionKeyDict["second"])
-    print(s1t1, s1t2 )
-    print("sienna:", s1t1/s1t2, "mint:", stkdPrice)
-    swapAmount = optimumSwapAmountStkd(s1t1,s1t2,stkdPrice).real
-    print(swapAmount)
+    optimum = optimumSwapAmountStkd(s1t1,s1t2,stkdPrice).real
+    swapAmount = optimum
     if( swapAmount < 40.0 ):
         swapAmount = 40
     firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
     secondSwap = ( firstSwap * .998 ) /  stkdPrice
     profit = secondSwap - swapAmount - float(botInfo.fee.amount.to_data()[0]["amount"])*10**-6
-    return profit
+    return profit, s1t1, s1t2, s1t1/s1t2, stkdPrice, swapAmount, optimum
 
 def broadcastTxStkd(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConvertSscrt):
 

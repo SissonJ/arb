@@ -52,7 +52,7 @@ async def main():
     #            adjacency_list[index].append(0)
     #    index = index + 1
     #print(adjacency_list[0])
-    cycles_list = find_cycles(pair_list, start_addr)
+    cycles_list = find_cycles(pair_list, start_addr, start_addr)
     #print(cycles_list)
     index = 0
     for cycles in cycles_list:
@@ -61,10 +61,47 @@ async def main():
         print(index)
         index = index + 1
         for pair in cycles:
-            print(pair.pair_addr)
+            #print(pair.pair_addr)
+            print(pair)
             #print(await pair.query_pair(client))
         
     await client.session.close()
     return 0
 
-asyncio.run(main())
+#asyncio.run(main())
+
+class TestPair:
+  id: int
+  token0_addr: int
+  token1_addr: int
+
+  def __init__(self, id, token0_addr, token1_addr):
+    self.id = id
+    self.token0_addr = token0_addr
+    self.token1_addr = token1_addr
+
+def testRouter():
+  pair_list = []
+  pair_list.append(TestPair(1,12,19))
+  pair_list.append(TestPair(2,18,19))
+  pair_list.append(TestPair(3,18,17))
+  pair_list.append(TestPair(4,18,15))
+  pair_list.append(TestPair(5,16,15))
+  pair_list.append(TestPair(6,15,20))
+  pair_list.append(TestPair(7,12,20))
+  pair_list.append(TestPair(8,12,15))
+  pair_list.append(TestPair(9,12,14))
+  pair_list.append(TestPair(10,13,14))
+  pair_list.append(TestPair(11,12,13))
+  res = find_cycles(pair_list, 12, 12)
+  print(res)
+  for cycles in res:
+    for pairs in cycles:
+        print(pairs.id)
+    print()
+  #print(res[0][0][1][1][0])
+  #for testPairs in res[0][0][1][1][0]:
+  #  print(testPairs.id)
+  #pass
+
+testRouter()

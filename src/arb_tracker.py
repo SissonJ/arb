@@ -8,6 +8,7 @@ from config import config, configStdk
 from BotInfo import BotInfo
 from env import endpoint
 from utils import getSSwapRatio, getSiennaRatio, calculateProfit, sync_next_block, optimumProfit
+from utils_router import find_cycles
 from utils_stkd import arbTrackerStkd
 
 async def main():
@@ -16,12 +17,12 @@ async def main():
   amountSwapping = 40
   gasFeeScrt = 0
   lastProfit = {}
+  lastProfitStkd = 0
   for cfg in config:
     lastProfit.update( {cfg: 0} )
   print("Starting loop")
   while True:
     time.sleep(5)
-    lastProfitStkd = 0
     lastHeight = sync_next_block(client, lastHeight)
     for cfg in config:
       botInfo = BotInfo(config[cfg])
@@ -46,10 +47,14 @@ async def main():
         lastProfit[cfg] = profit
       await botInfo.asyncClient.session.close()
     botInfoStkd = BotInfo(configStdk)
-    profitStkd = arbTrackerStkd(botInfoStkd, {"first":None, "second":None}, {"first":None, "second":None})
-    if(profit > lastProfitStkd + .01 or profit < lastProfitStkd - .01 or profit > 0):
+    profitStkd, siesscrt, siestkd, sieprice, mint, swapamount, optimum = arbTrackerStkd(botInfoStkd, {"first":None, "second":None}, {"first":None, "second":None})
+    if(profitStkd > lastProfitStkd + .01 or profitStkd < lastProfitStkd - .01 or profitStkd > 0):
+      print( siesscrt, siestkd, swapamount )
+      print( optimum )
       print(datetime.now(), "height", lastHeight, "sscrt-stkd-config" , "profit:", profitStkd, sep="\t")
+      print("sienna:", sieprice, "mint:", mint)
+      print()
       lastProfitStkd = profitStkd
     await botInfoStkd.asyncClient.session.close()
-    print()
+
 asyncio.run(main())
