@@ -329,4 +329,8 @@ def regQuery():
   return
 
 #regQuery()
-print(optimumSwapAmountStdk(319600, 310835.328445, 1.02))
+#print(optimumSwapAmountStdk(319600, 310835.328445, 1.02))
+
+def swap_simulation_for_gain_loss():
+  
+  pass

@@ -8,8 +8,9 @@ from config import config, configStdk
 from BotInfo import BotInfo
 from env import endpoint
 from utils import getSSwapRatio, getSiennaRatio, calculateProfit, sync_next_block, optimumProfit
-from utils_router import find_cycles
 from utils_stkd import arbTrackerStkd
+
+black_list = ["sscrt-swbtc-config", "sscrt-sxmr-config", "sscrt-sienna-config"]
 
 async def main():
   client = LCDClient(endpoint, 'secret-4')
@@ -25,6 +26,8 @@ async def main():
     time.sleep(5)
     lastHeight = sync_next_block(client, lastHeight)
     for cfg in config:
+      if( cfg in black_list):
+        continue
       botInfo = BotInfo(config[cfg])
       gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2.5
       s1ratio, sswapt1, sswapt2 = getSSwapRatio(botInfo)
@@ -46,6 +49,8 @@ async def main():
         print()
         lastProfit[cfg] = profit
       await botInfo.asyncClient.session.close()
+    if( "sscrt-stkd-config" in black_list ):
+      continue
     botInfoStkd = BotInfo(configStdk)
     profitStkd, siesscrt, siestkd, sieprice, mint, swapamount, optimum = arbTrackerStkd(botInfoStkd, {"first":None, "second":None}, {"first":None, "second":None})
     if(profitStkd > lastProfitStkd + .01 or profitStkd < lastProfitStkd - .01 or profitStkd > 0):
