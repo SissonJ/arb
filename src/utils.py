@@ -136,8 +136,8 @@ def calculateProfitOptimized(s1t2,s1t1,s2t2,s2t1, max, gasFeeScrt):
     amountToSwap = max
   if (amountToSwap < 1):
     amountToSwap = 1
-  firstSwap = constantProduct(s1t2, s1t1, amountToSwap*.996)
-  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.996)
+  firstSwap = constantProduct(s1t2, s1t1, amountToSwap*.9968)
+  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.9968)
   profit = secondSwap - amountToSwap - gasFeeScrt
   return amountToSwap, profit, firstSwap, secondSwap
 
