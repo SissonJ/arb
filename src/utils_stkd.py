@@ -75,7 +75,7 @@ def broadcastTxStkd(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConv
   except Exception as e:
     with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
       logWriter = csv.writer(csv_file, delimiter=',')
-      logWriter.writerow([datetime.now().date(), datetime.now().time(),"BROADCAST TX ERROR"], e)
+      logWriter.writerow([datetime.now().date(), datetime.now().time(),"BROADCAST TX ERROR", e])
     return False
 
 def swapStkd(
