@@ -3,6 +3,8 @@ from secret_sdk.client.lcd.lcdclient import AsyncLCDClient, LCDClient
 from secret_sdk.client.lcd.wallet import Wallet
 from secret_sdk.core.auth.data.tx import StdFee
 from secret_sdk.key.mnemonic import MnemonicKey
+from utils_taxes import read_inventory
+from config import inventory_locations
 
 
 class BotInfo:
@@ -22,6 +24,7 @@ class BotInfo:
   accountNum: int #wallet.account_number(),
   sequence: int #wallet.sequence(),
   logs: Dict[str, str]
+  inv: Dict[str, Any]
   #botConfig: Dict[str, Dict[str, str], Dict[str, str], Dict[str, str], Dict[str, str], str, Dict[int, str]]
 
   def __init__(self, botConfig):
@@ -53,4 +56,8 @@ class BotInfo:
       "central": botConfig["centralLogLoc"],
       "output": botConfig["outputLogLoc"],
     }
+    self.inv = read_inventory(inventory_locations["arb_v2"])
+
+  def read_inventory(self, botConfig["inv_loc"]["arb_v2"]):
+    pass
     

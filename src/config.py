@@ -6,6 +6,10 @@ sscrtAdresses = {
   "SSCRT_KEY": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU="
 }
 
+inventory_locations = {
+  "arb_v2": "../logs/inventory.py"
+}
+
 config = {  
   "sscrt-shd-config": {
     "mkSeed": mkSeed,
