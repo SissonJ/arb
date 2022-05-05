@@ -332,5 +332,7 @@ def regQuery():
 #print(optimumSwapAmountStdk(319600, 310835.328445, 1.02))
 
 def swap_simulation_for_gain_loss():
-  
-  pass
+  controller = BotInfo(cfg["sscrt-shd-config"])
+  print(controller.inv)
+
+swap_simulation_for_gain_loss()

@@ -1,9 +1,12 @@
+import csv
+import fcntl
+import time
 from typing import Any, Dict
 from secret_sdk.client.lcd.lcdclient import AsyncLCDClient, LCDClient
 from secret_sdk.client.lcd.wallet import Wallet
 from secret_sdk.core.auth.data.tx import StdFee
 from secret_sdk.key.mnemonic import MnemonicKey
-from utils_taxes import read_inventory
+#from utils_taxes import read_inventory
 from config import inventory_locations
 
 
@@ -24,6 +27,7 @@ class BotInfo:
   accountNum: int #wallet.account_number(),
   sequence: int #wallet.sequence(),
   logs: Dict[str, str]
+  inventory_locations: Dict[str, str]
   inv: Dict[str, Any]
   #botConfig: Dict[str, Dict[str, str], Dict[str, str], Dict[str, str], Dict[str, str], str, Dict[int, str]]
 
@@ -56,8 +60,35 @@ class BotInfo:
       "central": botConfig["centralLogLoc"],
       "output": botConfig["outputLogLoc"],
     }
-    self.inv = read_inventory(inventory_locations["arb_v2"])
+    self.inventory_locations = inventory_locations
+    self.inv = self.read_inventory("arb_v2") #[price, amount]
 
-  def read_inventory(self, botConfig["inv_loc"]["arb_v2"]):
-    pass
-    
+  def read_inventory(self, wallet):
+    with open( self.inventory_locations[wallet], newline='') as csv_file:
+      self.enter(csv_file)
+      logReader = csv.reader(csv_file, delimiter=',')
+      inv = []
+      for row in logReader:
+        if(row[0] == "price"):
+          continue
+        inv.append([row[0],row[1]])
+      fcntl.flock(csv_file, fcntl.LOCK_UN)  
+    return inv
+
+  def write_inventory(self, wallet):
+    with open( self.inventory_locations[wallet], mode="w", newline="") as csv_file:
+      self.enter(csv_file)
+      logWriter = csv.writer(csv_file, delimiter=',')
+      logWriter.writerow(["price", "amount"])
+      for prices in self.inv:
+        logWriter.writerow([prices[0], prices[1]])
+      fcntl.flock(csv_file, fcntl.LOCK_UN)
+
+  def enter(self, file):
+    while True:
+      try:
+        fcntl.flock(file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        break
+      except (OSError, IOError) as ex:
+        pass
+      time.sleep(.05)
