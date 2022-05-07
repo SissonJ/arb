@@ -1,0 +1,6 @@
+move .service files to /usr/lib/systemd/system/
+run:
+    sudo systemctl daemon-reload
+    sudo systemctl enable filename.service
+    sudo systemctl start filename.service
+    sudo systemctl status filemane.service
