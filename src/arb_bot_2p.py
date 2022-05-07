@@ -90,7 +90,7 @@ async def main():
         with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
           logWriter = csv.writer(csv_file, delimiter=',')
           logWriter.writerow([datetime.now().date(), datetime.now().time(),"Attempted", nonceDictSwap["first"], nonceDictSwap["second"]])
-        maxAmountSwapping = recordTx(botInfo, sys.argv[1], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
+        maxAmountSwapping = recordTx(botInfo, sys.argv[1], optimumAmountSwapping, (siennaRatio + sswapRatio)/2, "arb_v3")
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       botInfo.sequence = botInfo.wallet.sequence()
       nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)

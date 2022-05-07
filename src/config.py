@@ -1,17 +1,18 @@
-from env import endpoint, testnet, mkSeed
+from env import endpoint, testnet, mkSeed, mkSeed2, viewing_keys
 #from env import mkSeed2 as mkSeed
 
 sscrtAdresses = {
   "SSCRT_ADDRESS": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek",
-  "SSCRT_KEY": "2327cebc94647858fe2edba0992ff08d4eba6f1988c77ca85fb63fcef3d2efd4="
+  "SSCRT_KEY": viewing_keys["arb_v3"]["SSCRT_KEY"],
 }
 
 inventory_locations = {
-  "arb_v2": "../logs/inventory.csv"
+  "arb_v3": "../logs/inventory.csv"
 }
 
 central_logs = {
-  "arb_v2": "../logs/arb_v2/inventory.csv"
+  "arb_v2": "../logs/arb_v2/inventory.csv",
+  "arb_v3": "../logs/arb_v3/inventory.csv"
 }
 
 config = {  
@@ -34,8 +35,8 @@ config = {
       "token2": "secret1qfql357amn448duf5gvp9gr48sxx9tsnhupu3d", #SHD_ADDRESS
     },
     "tokenKeys":{
-      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
-      "token2": "api_key_dbViT6Q9NycWc04tJ8DaylmO1BWGcWz8rJixY3/ZQnY=", #SHD_API_KEY
+      "token1": viewing_keys["arb_v3"]["SSCRT_KEY"], #SSCRT_API_KEY
+      "token2": viewing_keys["arb_v3"]["SHD_KEY"], #SHD_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,
@@ -72,8 +73,8 @@ config = {
       "token2": "secret1wuzzjsdhthpvuyeeyhfq2ftsn3mvwf9rxy6ykw", #SETH_ADDRESS
     },
     "tokenKeys":{
-      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
-      "token2": "api_key_tfA3AUYa/EH5mk0cIv7WqmYlz4VZktu7HiBUXW1HbrU=", #SETH_API_KEY
+      "token1": viewing_keys["arb_v3"]["SSCRT_KEY"], #SSCRT_API_KEY
+      "token2": viewing_keys["arb_v3"]["SETH_KEY"], #SETH_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,
@@ -110,8 +111,8 @@ config = {
       "token2": "secret1g7jfnxmxkjgqdts9wlmn238mrzxz5r92zwqv4a", #SWBTC_ADDRESS
     },
     "tokenKeys":{
-      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
-      "token2": "api_key_c5NVcP5dQ1E5sZF6oJh75uYFs/FiZJKBgY8jIpXrZ+s=", #SWBTC_API_KEY
+      "token1": viewing_keys["arb_v3"]["SSCRT_KEY"], #SSCRT_API_KEY
+      "token2": viewing_keys["arb_v3"]["SWBTC_KEY"], #SWBTC_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,
@@ -148,8 +149,8 @@ config = {
       "token2": "secret18wpjn83dayu4meu6wnn29khfkwdxs7kyrz9c8f", #SUSDT_ADDRESS
     },
     "tokenKeys":{
-      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
-      "token2": "25c5bb499a37235d8d91137666be433f91a6cad5bc864868ef6c4fb556a6a1f3", #SUSDT_API_KEY
+      "token1": viewing_keys["arb_v3"]["SSCRT_KEY"], #SSCRT_API_KEY
+      "token2": viewing_keys["arb_v3"]["SUSDT_KEY"], #SUSDT_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,
@@ -186,8 +187,8 @@ config = {
       "token2": "secret19ungtd2c7srftqdwgq0dspwvrw63dhu79qxv88", #SXMR_ADDRESS
     },
     "tokenKeys":{
-      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
-      "token2": "api_key_tXggdXqRd4Bq06tQdLrq3EDeQJCdKVm56ciGjusX6ik=", #SXMR_API_KEY
+      "token1": viewing_keys["arb_v3"]["SSCRT_KEY"], #SSCRT_API_KEY
+      "token2": viewing_keys["arb_v3"]["SXMR_KEY"], #SXMR_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,
@@ -224,8 +225,8 @@ config = {
       "token2": "secret1rgm2m5t530tdzyd99775n6vzumxa5luxcllml4", #SIENNA_ADDRESS
     },
     "tokenKeys":{
-      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
-      "token2": "api_key_IiGUpxiB9+hry8VNpAx+6C9x72Tz1KEkhvAWtpLQUUU=", #SIENNA_API_KEY
+      "token1": viewing_keys["arb_v3"]["SSCRT_KEY"], #SSCRT_API_KEY
+      "token2": viewing_keys["arb_v3"]["SIENNA_KEY"], #SIENNA_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,
@@ -247,7 +248,7 @@ config = {
 
 configStdk = {
     #"sscrt-stdk-config": {
-    "mkSeed": mkSeed,
+    "mkSeed": mkSeed2,
     "pairAddrs": {
       "pair1": "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct", #SIENNA_SSCRT_STKD_PAIR
       "pair2": "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct", #SIENNA_SSCRT_STKD_PAIR
@@ -265,8 +266,8 @@ configStdk = {
       "token2": "secret1k6u0cy4feepm6pehnz804zmwakuwdapm69tuc4", #STKD_CONTRACT
     },
     "tokenKeys":{
-      "token1": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU=", #SSCRT_API_KEY
-      "token2": "a24cefc2fd7de8811c4dcd6964f351d4d9f999c3ec4d7543546543c1258c63d2", #STKD_API_KEY
+      "token1": viewing_keys["arb_v2"]["SSCRT_KEY"], #SSCRT_API_KEY
+      "token2": viewing_keys["arb_v2"]["STKD_KEY"], #STKD_API_KEY
     },
     "tokenDecimals":{
       "token1": 6,

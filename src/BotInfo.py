@@ -63,7 +63,7 @@ class BotInfo:
     }
     self.inventory_locations = inventory_locations
     self.total = [] #scrt bal, scrt price, 
-    self.inv = self.read_inventory("arb_v2") #[price, amount]
+    self.inv = self.read_inventory("arb_v3") #[price, amount]
 
   def read_inventory(self, wallet):
     with open( self.inventory_locations[wallet], newline='') as csv_file:
