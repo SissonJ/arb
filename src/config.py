@@ -3,7 +3,7 @@ from env import endpoint, testnet, mkSeed
 
 sscrtAdresses = {
   "SSCRT_ADDRESS": "secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek",
-  "SSCRT_KEY": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU="
+  "SSCRT_KEY": "2327cebc94647858fe2edba0992ff08d4eba6f1988c77ca85fb63fcef3d2efd4="
 }
 
 inventory_locations = {
