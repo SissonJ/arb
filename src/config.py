@@ -7,7 +7,11 @@ sscrtAdresses = {
 }
 
 inventory_locations = {
-  "arb_v2": "../logs/inventory.py"
+  "arb_v2": "../logs/inventory.csv"
+}
+
+central_logs = {
+  "arb_v2": "../logs/arb_v2/inventory.csv"
 }
 
 config = {  
@@ -276,8 +280,8 @@ configStdk = {
     "centralLogLoc": "./../logs/log.csv",
     "outputLogLoc": "./../logs/sscrt-stkd.log",
     "fee": {
-      "gas": 400001,
-      "price": "100000uscrt",
+      "gas": 350001,
+      "price": "87500uscrt",
     },
   #},
 }

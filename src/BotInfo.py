@@ -1,7 +1,7 @@
 import csv
 import fcntl
 import time
-from typing import Any, Dict
+from typing import Any, Dict, List
 from secret_sdk.client.lcd.lcdclient import AsyncLCDClient, LCDClient
 from secret_sdk.client.lcd.wallet import Wallet
 from secret_sdk.core.auth.data.tx import StdFee
@@ -28,7 +28,8 @@ class BotInfo:
   sequence: int #wallet.sequence(),
   logs: Dict[str, str]
   inventory_locations: Dict[str, str]
-  inv: Dict[str, Any]
+  inv: List
+  total: List
   #botConfig: Dict[str, Dict[str, str], Dict[str, str], Dict[str, str], Dict[str, str], str, Dict[int, str]]
 
   def __init__(self, botConfig):
@@ -61,24 +62,30 @@ class BotInfo:
       "output": botConfig["outputLogLoc"],
     }
     self.inventory_locations = inventory_locations
+    self.total = [] #scrt bal, scrt price, 
     self.inv = self.read_inventory("arb_v2") #[price, amount]
 
   def read_inventory(self, wallet):
     with open( self.inventory_locations[wallet], newline='') as csv_file:
-      self.enter(csv_file)
+      #self.enter(csv_file)
       logReader = csv.reader(csv_file, delimiter=',')
       inv = []
+      self.total = []
       for row in logReader:
+        if(row[0] == "total"):
+          self.total.append(float(row[1])) # total sscrt
+          self.total.append(float(row[2])) # total scrt
+          self.total.append(float(row[3])) # scrt price
+          continue
         if(row[0] == "price"):
           continue
-        inv.append([row[0],row[1]])
-      fcntl.flock(csv_file, fcntl.LOCK_UN)  
+        inv.append([float(row[0]),float(row[1])])
     return inv
 
   def write_inventory(self, wallet):
     with open( self.inventory_locations[wallet], mode="w", newline="") as csv_file:
-      self.enter(csv_file)
       logWriter = csv.writer(csv_file, delimiter=',')
+      logWriter.writerow(["total", self.total[0], self.total[1], self.total[2]])
       logWriter.writerow(["price", "amount"])
       for prices in self.inv:
         logWriter.writerow([prices[0], prices[1]])

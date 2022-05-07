@@ -47,3 +47,21 @@ async def generateTxEncryptionKeysAsync(client: AsyncLCDClient):
   nonceDict = {"first":client.utils.generate_new_seed(), "second":client.utils.generate_new_seed()}
   txEncryptionKeyDict = {"first": await client.utils.get_tx_encryption_key(nonceDict["first"]), "second": await client.utils.get_tx_encryption_key(nonceDict["second"])}
   return nonceDict, txEncryptionKeyDict
+
+async def getBalancesAsync(botInfo: BotInfo):
+  task1 = asyncio.create_task(botInfo.client.bank.balance(botInfo.accAddr))
+  task2 = asyncio.create_task(botInfo.client.wasm.contract_query(
+    botInfo.tokenContractAddresses["token1"], 
+    { "balance": { "address": botInfo.accAddr, "key": botInfo.tokenKeys["token1"] }}
+  ))
+  task3 = asyncio.create_task(botInfo.client.wasm.contract_query(
+    botInfo.tokenContractAddresses["token2"], 
+    { "balance": { "address": botInfo.accAddr, "key": botInfo.tokenKeys["token2"] }}
+  ))
+  scrtBalRes = await task1
+  t1BalRes = await task2
+  t2BalRes = await task3
+  scrtBal = int(scrtBalRes.to_data()[0]["amount"]) * 10**-6
+  t1Bal = float(t1BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token1"]
+  t2Bal = float(t2BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token2"]
+  return scrtBal, t1Bal, t2Bal

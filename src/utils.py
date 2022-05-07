@@ -1,4 +1,5 @@
 import base64
+import fcntl
 from math import sqrt
 import time
 import csv
@@ -136,8 +137,8 @@ def calculateProfitOptimized(s1t2,s1t1,s2t2,s2t1, max, gasFeeScrt):
     amountToSwap = max
   if (amountToSwap < 1):
     amountToSwap = 1
-  firstSwap = constantProduct(s1t2, s1t1, amountToSwap*.996)
-  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.996)
+  firstSwap = constantProduct(s1t2, s1t1, amountToSwap*.997) * .9999
+  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.997) * .9999
   profit = secondSwap - amountToSwap - gasFeeScrt
   return amountToSwap, profit, firstSwap, secondSwap
 
@@ -280,18 +281,56 @@ def txHandle(logLocation, txResponse, profit, runningProfit, lastHeight, amountS
 
   return True
 
-def recordTx(botInfo: BotInfo, pair, amountSwapped, ratio):
+def calculate_gain_loss( controler: BotInfo, newScrtBal, newSscrtBal, scrtPrice, amount_swapped):
+  gain = 0
+  if( not newScrtBal == controler.total[1] ):
+    gain = gain + newScrtBal * controler.total[2] - controler.total[1] * controler.total[2] 
+    controler.total[1] = newScrtBal
+  if( newSscrtBal > controler.total[0] ):
+    temp_scrt_amount = 0
+    cost_basis_gain = 0
+    while temp_scrt_amount < amount_swapped:
+      temp = [0,0]
+      indexhldr = index = 0
+      for things in controler.inv:
+        if( things[0] > temp[0] ):
+          temp = things
+          index = indexhldr
+        indexhldr = indexhldr + 1
+      if( temp[1] > amount_swapped - temp_scrt_amount ):
+        cost_basis_gain = cost_basis_gain + (amount_swapped - temp_scrt_amount) * temp[0]
+        controler.inv[index][1] = controler.inv[index][1] - (amount_swapped - temp_scrt_amount)
+        controler.inv.append([amount_swapped + newSscrtBal - controler.total[0], scrtPrice])
+        temp_scrt_amount = amount_swapped
+      else:
+        temp_scrt_amount = temp_scrt_amount + temp[1]
+        cost_basis_gain = cost_basis_gain + temp[1] * temp[0]
+        controler.inv.pop(index)
+        if( temp_scrt_amount == amount_swapped ):
+          controler.inv.append([amount_swapped + newSscrtBal - controler.total[0], scrtPrice])
+    gain = gain + (amount_swapped * scrtPrice - cost_basis_gain) + (newSscrtBal - controler.total[0]) * scrtPrice
+    controler.total[0] = newSscrtBal
+  return gain
+
+def recordTx(botInfo: BotInfo, pair, amountSwapped, ratio, wallet):
   scrtBal, t1Bal, t2Bal = getBalances(botInfo)
   res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=secret&vs_currencies=usd")
   data = res.json()
+  botInfo.read_inventory(wallet)
+  gain = calculate_gain_loss(botInfo, scrtBal, t1Bal, data["secret"]["usd"], amountSwapped)
+  botInfo.write_inventory(wallet)
 
   with open( botInfo.logs["csv"], mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
-    logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped])
+    #date,time,scrt price,scrt bal,t1 bal,ratio,t2 bal,amount swapped,gain/loss
+    logWriter.writerow([datetime.now(), data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped, gain])
+  
   with open( botInfo.logs["central"], mode="a", newline="") as csv_file:
+    botInfo.enter(csv_file)
     logWriter = csv.writer(csv_file, delimiter=',')
-    #date, time, pair, sscrt/usd, scrt bal, sscrtBal, t2/sscrt, t2Bal, amount traded
-    logWriter.writerow([datetime.now().date(), datetime.now().time(), pair,  data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped])
+    #date, time, pair, sscrt/usd, scrt bal, sscrtBal, t2/sscrt, t2Bal, amount traded, gain/loss
+    logWriter.writerow([datetime.now().date(), datetime.now().time(), pair,  data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped, gain])
+    fcntl.flock(csv_file, fcntl.LOCK_UN)
 
   return t2Bal
 
@@ -310,3 +349,4 @@ def getBalances(botInfo: BotInfo):
   t1Bal = float(t1BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token1"]
   t2Bal = float(t2BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token2"]
   return scrtBal, t1Bal, t2Bal
+

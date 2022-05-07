@@ -1,13 +1,20 @@
 import csv
 
-def read_inventory(path_to_inv):
-    with open( path_to_inv, newline='') as csv_file:
-        logReader = csv.reader(csv_file, delimiter=',')
-        inv = []
-        for row in logReader:
-            if(row[0] == "price"):
-                continue
-            inv.append([row[0],row[1]])
-    print(inv)
+from BotInfo import BotInfo
+from config import config
+from utils import calculate_gain_loss
 
-read_inventory("../logs/inventory.csv")
+def swap_simulations():
+    botinfo = BotInfo(config["sscrt-shd-config"])
+    botinfo.read_inventory("arb_v2")
+    gain = calculate_gain_loss(botinfo, 29, 655, 3.6, 300)
+    print(botinfo.total)
+    print(botinfo.inv)
+    botinfo.write_inventory("arb_v2")
+    print(gain)
+
+swap_simulations()
+
+#"total",650,30,3.50
+#"price","amount"
+#3.05,650
