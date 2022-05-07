@@ -35,8 +35,8 @@ def calculateProfitStkd(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encr
   if( swapAmount < 2 ):
     swapAmount = 2
   if( swapAmount > 0 ):
-    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.996)
-    secondSwap = ( firstSwap * .997 ) /  stkdPrice
+    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
+    secondSwap = ( firstSwap * .9979 ) /  stkdPrice
     profit = secondSwap - swapAmount - gasFeeScrt
   else:
     return -1, -1, 0, 0, 0
@@ -50,7 +50,7 @@ def arbTrackerStkd(botInfo: BotInfo, nonceDict, encryptionKeyDict):
     if( swapAmount < 40.0 ):
         swapAmount = 40
     firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
-    secondSwap = ( firstSwap * .998 ) /  stkdPrice
+    secondSwap = ( firstSwap * .9979 ) /  stkdPrice
     profit = secondSwap - swapAmount - float(botInfo.fee.amount.to_data()[0]["amount"])*10**-6
     return profit, s1t1, s1t2, s1t1/s1t2, stkdPrice, swapAmount, optimum
 
@@ -75,7 +75,7 @@ def broadcastTxStkd(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond, msgConv
   except Exception as e:
     with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
       logWriter = csv.writer(csv_file, delimiter=',')
-      logWriter.writerow([datetime.now().date(), datetime.now().time(),"BROADCAST TX ERROR"], e)
+      logWriter.writerow([datetime.now().date(), datetime.now().time(),"BROADCAST TX ERROR", e])
     return False
 
 def swapStkd(

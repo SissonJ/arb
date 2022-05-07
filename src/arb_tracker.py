@@ -53,7 +53,7 @@ async def main():
       continue
     botInfoStkd = BotInfo(configStdk)
     profitStkd, siesscrt, siestkd, sieprice, mint, swapamount, optimum = arbTrackerStkd(botInfoStkd, {"first":None, "second":None}, {"first":None, "second":None})
-    if(profitStkd > lastProfitStkd + .01 or profitStkd < lastProfitStkd - .01 or profitStkd > 0):
+    if((profitStkd > lastProfitStkd + .01 or profitStkd < lastProfitStkd - .01 or profit > 0) and not profit == lastProfitStkd):
       print( siesscrt, siestkd, swapamount )
       print( optimum )
       print(datetime.now(), "height", lastHeight, "sscrt-stkd-config" , "profit:", profitStkd, sep="\t")
