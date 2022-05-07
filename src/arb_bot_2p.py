@@ -17,15 +17,10 @@ async def main():
   nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
   nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeysAsync(botInfo.asyncClient)
 
-  sscrtBal = 0
   keepLooping = True
   txResponse = ""
-  runningProfit = 0
-  maxAmountSwapping = 650
-  optimumAmountSwapping = 0
-  height = 0
-  lastHeight = 0
-  lastProfit = 0
+  maxAmountSwapping = botInfo.total[0] - 5
+  optimumAmountSwapping = height = lastHeight = lastProfit = 0
   lastLoopIsError = False
   gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2.5
   with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
@@ -95,7 +90,7 @@ async def main():
         with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
           logWriter = csv.writer(csv_file, delimiter=',')
           logWriter.writerow([datetime.now().date(), datetime.now().time(),"Attempted", nonceDictSwap["first"], nonceDictSwap["second"]])
-        recordTx(botInfo, config[sys.argv[1]], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
+        maxAmountSwapping = recordTx(botInfo, sys.argv[1], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       botInfo.sequence = botInfo.wallet.sequence()
       nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)

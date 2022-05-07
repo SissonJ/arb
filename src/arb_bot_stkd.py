@@ -9,7 +9,7 @@ def main():
   keeplooping = True
   botInfo = BotInfo(configStdk)
 
-  maxAmount = 300
+  maxAmount = 390
 
   nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
   nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
@@ -17,12 +17,6 @@ def main():
   height = lastProfit = runningProfit = 0
   txResponse = ""
   profit = 0
-  #client = LCDClient(endpoint, "secret-4")
-  #print(getStkdPrice(client))
-  #print(client.wasm.contract_query(
-  #  "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct",
-  #  'pair_info',
-  #))
   with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
     logWriter.writerow([datetime.now().date(), datetime.now().time(), "starting loop"])

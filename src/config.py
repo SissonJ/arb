@@ -6,6 +6,14 @@ sscrtAdresses = {
   "SSCRT_KEY": "api_key_3wPSbtuDquKHhFw1zSFILDXnQnsGz2TuISVAnlmUgYU="
 }
 
+inventory_locations = {
+  "arb_v2": "../logs/inventory.csv"
+}
+
+central_logs = {
+  "arb_v2": "../logs/arb_v2/inventory.csv"
+}
+
 config = {  
   "sscrt-shd-config": {
     "mkSeed": mkSeed,
@@ -272,8 +280,8 @@ configStdk = {
     "centralLogLoc": "./../logs/log.csv",
     "outputLogLoc": "./../logs/sscrt-stkd.log",
     "fee": {
-      "gas": 400001,
-      "price": "100000uscrt",
+      "gas": 350001,
+      "price": "87500uscrt",
     },
   #},
 }
