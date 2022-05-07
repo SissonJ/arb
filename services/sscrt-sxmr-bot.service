@@ -5,7 +5,7 @@ Description=sscrt-sxmr pair arbitrage bot
 Type=simple
 ExecStart=python3 arb_bot_2p.py sscrt-sxmr-config
 Restart=on-failure
-WorkingDirectory=~/arb/src
+WorkingDirectory=/root/arb/src
 
 [Install]
 WantedBy=multi-user.target

@@ -5,7 +5,7 @@ Description=sscrt-sienna pair arbitrage bot
 Type=simple
 ExecStart=python3 arb_bot_2p.py sscrt-sienna-config
 Restart=on-failure
-WorkingDirectory=~/arb/src
+WorkingDirectory=/root/arb/src
 
 [Install]
 WantedBy=multi-user.target
