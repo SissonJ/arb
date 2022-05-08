@@ -2,10 +2,12 @@ from cmath import sqrt
 import csv
 from datetime import datetime
 import time
+
+import requests
 from BotInfo import BotInfo
 from secret_sdk.core.auth.data.tx import StdSignMsg
 from secret_sdk.core.coins import Coins
-from utils import constantProduct, createMsgExecuteSienna, getSiennaRatio
+from utils import calculate_gain_loss, constantProduct, createMsgExecuteSienna, getBalances, getSiennaRatio
 from config import sscrtAdresses
 
 SSCRT_ADDRESS = sscrtAdresses["SSCRT_ADDRESS"]
@@ -35,7 +37,7 @@ def calculateProfitStkd(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encr
   if( swapAmount < 2 ):
     swapAmount = 2
   if( swapAmount > 0 ):
-    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.997) *.9999
+    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.997) * .9999
     secondSwap = ( firstSwap * .998 ) /  stkdPrice
     profit = secondSwap - swapAmount - gasFeeScrt
   else:
@@ -119,3 +121,25 @@ def swapStkd(
   )
 
   return broadcastTxStkd(botInfo, msgExecuteSienna, msgExecuteStkd, msgSscrtToScrt)
+
+def recordTxStkd(botInfo: BotInfo, pair, amountSwapped, ratio, wallet):
+  scrtBal, t1Bal, t2Bal = getBalances(botInfo) #scrt, sscrt, stkd
+  res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=stkd-scrt&vs_currencies=usd")
+  data = res.json()
+  botInfo.read_inventory(wallet)
+  gain = calculate_gain_loss(botInfo, scrtBal, t2Bal, data["stkd-scrt"]["usd"], amountSwapped)
+  botInfo.write_inventory(wallet)
+
+  with open( botInfo.logs["csv"], mode="a", newline="") as csv_file:
+    logWriter = csv.writer(csv_file, delimiter=',')
+    #date,time,stkd-scrt price,scrt bal,t1 bal,ratio,t2 bal,amount swapped,gain/loss
+    logWriter.writerow([datetime.now(), data["stkd-scrt"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped, gain])
+  
+  with open( botInfo.logs["central"], mode="a", newline="") as csv_file:
+    botInfo.enter(csv_file)
+    logWriter = csv.writer(csv_file, delimiter=',')
+    #date, time, pair, stkd-sscrt/usd, scrt bal, sscrtBal, t2/sscrt, t2Bal, amount traded, gain/loss
+    logWriter.writerow([datetime.now().date(), datetime.now().time(), pair,  data["stkd-scrt"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped, gain])
+    #fcntl.flock(csv_file, fcntl.LOCK_UN)
+
+  return t2Bal, scrtBal

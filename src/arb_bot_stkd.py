@@ -1,6 +1,6 @@
 import csv
-from utils import recordTx, generateTxEncryptionKeys, sync_next_block
-from utils_stkd import calculateProfitStkd, swapStkd
+from utils import generateTxEncryptionKeys, sync_next_block
+from utils_stkd import calculateProfitStkd, recordTxStkd, swapStkd
 from datetime import datetime
 from BotInfo import BotInfo
 from config import configStdk
@@ -9,7 +9,7 @@ def main():
   keeplooping = True
   botInfo = BotInfo(configStdk)
 
-  maxAmount = 390
+  maxAmount = botInfo.total[0] - 5
 
   nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
   nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
@@ -35,18 +35,17 @@ def main():
       with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
         logWriter = csv.writer(csv_file, delimiter=',')
         logWriter.writerow([datetime.now().date(), datetime.now().time(), "attempted", nonceDictSwap["first"], nonceDictSwap["second"]])
-    if(profit > lastProfit + .1 or profit < lastProfit - .1 or profit > 0):
+    if(profit > lastProfit + .1 or profit < lastProfit - .1 or profit > .05):
       with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
         logWriter = csv.writer(csv_file, delimiter=',')
         logWriter.writerow([datetime.now().date(), datetime.now().time(), "height:", height, "profit:", profit, "swapamount:", amountToSwap])
       lastProfit = profit
     if( txResponse != ""):
-      maxAmount = recordTx(botInfo, "stkd-scrt-sscrt", amountToSwap, mintPrice) - 5
-      scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
+      maxAmount, scrtBal = recordTxStkd(botInfo, "stkd-scrt-sscrt", amountToSwap, mintPrice, "arb_v2")
+      maxAmount = maxAmount - 5
       if(scrtBal < 1):
         break
     nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
-    botInfo.sequence = botInfo.wallet.sequence()
     nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
     botInfo.sequence = botInfo.wallet.sequence()
     keeplooping = True
