@@ -35,8 +35,8 @@ def calculateProfitStkd(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encr
   if( swapAmount < 2 ):
     swapAmount = 2
   if( swapAmount > 0 ):
-    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
-    secondSwap = ( firstSwap * .9979 ) /  stkdPrice
+    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.997) *.9999
+    secondSwap = ( firstSwap * .998 ) /  stkdPrice
     profit = secondSwap - swapAmount - gasFeeScrt
   else:
     return -1, -1, 0, 0, 0
