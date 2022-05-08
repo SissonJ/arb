@@ -301,7 +301,7 @@ def calculate_gain_loss( controler: BotInfo, newScrtBal, newSscrtBal, scrtPrice,
       if( temp[1] > amount_swapped - temp_scrt_amount ):
         cost_basis_gain = cost_basis_gain + (amount_swapped - temp_scrt_amount) * temp[0]
         controler.inv[index][1] = controler.inv[index][1] - (amount_swapped - temp_scrt_amount)
-        controler.inv.append([scrtPrice, amount_swapped + newSscrtBal - controler.total[0]])
+        controler.inv.append([scrtPrice, amount_swapped + (newSscrtBal - controler.total[0])])
         temp_scrt_amount = amount_swapped
       else:
         temp_scrt_amount = temp_scrt_amount + temp[1]
@@ -314,6 +314,7 @@ def calculate_gain_loss( controler: BotInfo, newScrtBal, newSscrtBal, scrtPrice,
   return gain
 
 def recordTx(botInfo: BotInfo, pair, amountSwapped, ratio, wallet):
+  time.sleep(1)
   scrtBal, t1Bal, t2Bal = getBalances(botInfo)
   res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=secret&vs_currencies=usd")
   data = res.json()

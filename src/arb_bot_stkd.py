@@ -14,9 +14,9 @@ def main():
   nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
   nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
   gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*3
-  height = lastProfit = runningProfit = 0
+  height = profit = 0
+  lastProfit = -1000000
   txResponse = ""
-  profit = 0
   with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
     logWriter.writerow([datetime.now().date(), datetime.now().time(), "starting loop"])
