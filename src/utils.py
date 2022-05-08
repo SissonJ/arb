@@ -1,9 +1,10 @@
 import base64
-import fcntl
+#import fcntl
 from math import sqrt
 import time
 import csv
 import json
+import traceback
 from typing import Dict, Optional
 import requests
 from datetime import datetime
@@ -330,9 +331,9 @@ def recordTx(botInfo: BotInfo, pair, amountSwapped, ratio, wallet):
     logWriter = csv.writer(csv_file, delimiter=',')
     #date, time, pair, sscrt/usd, scrt bal, sscrtBal, t2/sscrt, t2Bal, amount traded, gain/loss
     logWriter.writerow([datetime.now().date(), datetime.now().time(), pair,  data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped, gain])
-    fcntl.flock(csv_file, fcntl.LOCK_UN)
+    #fcntl.flock(csv_file, fcntl.LOCK_UN)
 
-  return t2Bal
+  return t1Bal
 
 
 def getBalances(botInfo: BotInfo):
@@ -350,3 +351,9 @@ def getBalances(botInfo: BotInfo):
   t2Bal = float(t2BalRes['balance']['amount'])* 10**-botInfo.tokenDecimals["token2"]
   return scrtBal, t1Bal, t2Bal
 
+def log_traceback(ex, ex_traceback=None):
+  if ex_traceback is None:
+    ex_traceback = ex.__traceback__
+  tb_lines = [ line.rstrip('\n') for line in
+    traceback.format_exception(ex.__class__, ex, ex_traceback)]
+  return tb_lines

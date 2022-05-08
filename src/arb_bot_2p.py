@@ -6,7 +6,7 @@ import traceback
 
 from BotInfo import BotInfo
 from config import config
-from utils import calculateProfitOptimized, sync_next_block
+from utils import calculateProfitOptimized, log_traceback, sync_next_block
 from utils import swapSienna, swapSswap, recordTx, generateTxEncryptionKeys
 from utils_async import runAsyncQueries, generateTxEncryptionKeysAsync
 
@@ -45,7 +45,9 @@ async def main():
       with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
         logWriter = csv.writer(csv_file, delimiter=',')
         logWriter.writerow([datetime.now().date(), datetime.now().time(),"Error in Queries"])
-        logWriter.writerow([e.with_traceback()])
+        traceback = log_traceback(e)
+        for rows in traceback:
+          logWriter.writerow([rows])
       lastLoopIsError = True
       continue
     try:
@@ -84,7 +86,9 @@ async def main():
       with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
         logWriter = csv.writer(csv_file, delimiter=',')
         logWriter.writerow([datetime.now().date(), datetime.now().time(),"Error in TX"])
-        logWriter.writerow([e.with_traceback()])
+        traceback = log_traceback(e)
+        for rows in traceback:
+          logWriter.writerow([rows])
     try:
       if( txResponse != ""):
         with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
@@ -100,7 +104,9 @@ async def main():
       with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
         logWriter = csv.writer(csv_file, delimiter=',')
         logWriter.writerow([datetime.now().date(), datetime.now().time(),"Error in Queries"])
-        logWriter.writerow([e.with_traceback()])
+        traceback = log_traceback(e)
+        for rows in traceback:
+          logWriter.writerow([rows])
       lastLoopIsError = True
       continue
 
