@@ -2,6 +2,7 @@ import csv
 
 from BotInfo import BotInfo
 from config import config
+from secret_sdk import exceptions
 from utils import calculate_gain_loss, log_traceback, recordTx
 
 def swap_simulations():
@@ -15,19 +16,22 @@ def swap_simulations():
     #printout = recordTx(botinfo, "sscrt-test-test",200,12,"arb_v3")
     #print(printout)
 
-swap_simulations()
+#swap_simulations()
 
 def error_testing():
     try:
-        1/0
+        raise exceptions.LCDResponseError("message", "")
     except Exception as e:
+        if(isinstance(e, exceptions.LCDResponseError)):
+            print("wow")
+            return
         with open( "../logs/TEST.csv", mode="a", newline="") as csv_file:
             logWriter = csv.writer(csv_file, delimiter=',')
             traceback = log_traceback(e)
             for rows in traceback:
                 logWriter.writerow([rows])
 
-#error_testing()
+error_testing()
 
 #"total",650,30,3.50
 #"price","amount"

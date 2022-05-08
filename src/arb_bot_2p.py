@@ -3,6 +3,7 @@ import csv
 from datetime import datetime
 import sys
 import traceback
+from secret_sdk.exceptions import LCDResponseError
 
 from BotInfo import BotInfo
 from config import config
@@ -45,9 +46,10 @@ async def main():
       with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
         logWriter = csv.writer(csv_file, delimiter=',')
         logWriter.writerow([datetime.now().date(), datetime.now().time(),"Error in Queries"])
-        traceback = log_traceback(e)
-        for rows in traceback:
-          logWriter.writerow([rows])
+        if( not isinstance(e, LCDResponseError)):
+          traceback = log_traceback(e)
+          for rows in traceback:
+            logWriter.writerow([rows])
       lastLoopIsError = True
       continue
     try:
@@ -104,9 +106,10 @@ async def main():
       with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
         logWriter = csv.writer(csv_file, delimiter=',')
         logWriter.writerow([datetime.now().date(), datetime.now().time(),"Error in Queries"])
-        traceback = log_traceback(e)
-        for rows in traceback:
-          logWriter.writerow([rows])
+        if( not isinstance(e, LCDResponseError)):
+          traceback = log_traceback(e)
+          for rows in traceback:
+            logWriter.writerow([rows])
       lastLoopIsError = True
       continue
 
