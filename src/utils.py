@@ -301,14 +301,14 @@ def calculate_gain_loss( controler: BotInfo, newScrtBal, newSscrtBal, scrtPrice,
       if( temp[1] > amount_swapped - temp_scrt_amount ):
         cost_basis_gain = cost_basis_gain + (amount_swapped - temp_scrt_amount) * temp[0]
         controler.inv[index][1] = controler.inv[index][1] - (amount_swapped - temp_scrt_amount)
-        controler.inv.append([amount_swapped + newSscrtBal - controler.total[0], scrtPrice])
+        controler.inv.append([scrtPrice, amount_swapped + newSscrtBal - controler.total[0]])
         temp_scrt_amount = amount_swapped
       else:
         temp_scrt_amount = temp_scrt_amount + temp[1]
         cost_basis_gain = cost_basis_gain + temp[1] * temp[0]
         controler.inv.pop(index)
         if( temp_scrt_amount == amount_swapped ):
-          controler.inv.append([amount_swapped + newSscrtBal - controler.total[0], scrtPrice])
+          controler.inv.append([scrtPrice, amount_swapped + newSscrtBal - controler.total[0]])
     gain = gain + (amount_swapped * scrtPrice - cost_basis_gain) + (newSscrtBal - controler.total[0]) * scrtPrice
     controler.total[0] = newSscrtBal
   return gain
