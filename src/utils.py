@@ -314,7 +314,6 @@ def calculate_gain_loss( controler: BotInfo, newScrtBal, newSscrtBal, scrtPrice,
   return gain
 
 def recordTx(botInfo: BotInfo, pair, amountSwapped, ratio, wallet):
-  time.sleep(1)
   scrtBal, t1Bal, t2Bal = getBalances(botInfo)
   res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=secret&vs_currencies=usd")
   data = res.json()

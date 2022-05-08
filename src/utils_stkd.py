@@ -123,7 +123,6 @@ def swapStkd(
   return broadcastTxStkd(botInfo, msgExecuteSienna, msgExecuteStkd, msgSscrtToScrt)
 
 def recordTxStkd(botInfo: BotInfo, pair, amountSwapped, ratio, wallet):
-  time.sleep(1)
   scrtBal, t1Bal, t2Bal = getBalances(botInfo) #scrt, sscrt, stkd
   res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=stkd-scrt&vs_currencies=usd")
   data = res.json()

@@ -36,6 +36,7 @@ async def main():
       continue
     try:
       height = sync_next_block(botInfo.client, lastHeight)
+      lastHeight = height
       txResponse = ""
       sswapRatio, sswapt1, sswapt2,siennaRatio, siennat1, siennat2 = await runAsyncQueries(
         botInfo, 
@@ -93,6 +94,8 @@ async def main():
           logWriter.writerow([rows])
     try:
       if( txResponse != ""):
+        height = sync_next_block(botInfo.client, lastHeight)
+        lastHeight = height
         with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
           logWriter = csv.writer(csv_file, delimiter=',')
           logWriter.writerow([datetime.now().date(), datetime.now().time(),"Attempted", nonceDictSwap["first"], nonceDictSwap["second"]])

@@ -14,7 +14,7 @@ def main():
   nonceDictQuery, encryptionKeyDictQuery = generateTxEncryptionKeys(botInfo.client)
   nonceDictSwap, encryptionKeySwap = generateTxEncryptionKeys(botInfo.client)
   gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*3
-  height = profit = 0
+  height = lastHeight = profit = 0
   lastProfit = -1000000
   txResponse = ""
   with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
@@ -22,7 +22,8 @@ def main():
     logWriter.writerow([datetime.now().date(), datetime.now().time(), "starting loop"])
   while keeplooping:
     try:
-      height = sync_next_block(botInfo.client, height)
+      height = sync_next_block(botInfo.client, lastHeight)
+      lastHeight = height
       txResponse = ""
       amountToSwap, profit, firstSwap, secondSwap, mintPrice = calculateProfitStkd(botInfo, maxAmount, gasFeeScrt, nonceDictQuery, encryptionKeyDictQuery)
     except Exception as e:
@@ -41,6 +42,8 @@ def main():
         logWriter.writerow([datetime.now().date(), datetime.now().time(), "height:", height, "profit:", profit, "swapamount:", amountToSwap])
       lastProfit = profit
     if( txResponse != ""):
+      height = sync_next_block(botInfo.client, lastHeight)
+      lastHeight = height
       maxAmount, scrtBal = recordTxStkd(botInfo, "stkd-scrt-sscrt", amountToSwap, mintPrice, "arb_v2")
       maxAmount = maxAmount - 5
       if(scrtBal < 1):
