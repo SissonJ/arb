@@ -35,8 +35,8 @@ def calculateProfitStkd(botInfo: BotInfo, maxAmount, gasFeeScrt, nonceDict, encr
   if( swapAmount < 2 ):
     swapAmount = 2
   if( swapAmount > 0 ):
-    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.9969)
-    secondSwap = ( firstSwap * .9979 ) /  stkdPrice
+    firstSwap = constantProduct(s1t1, s1t2, swapAmount*.997) * .9999
+    secondSwap = ( firstSwap * .998 ) /  stkdPrice
     profit = secondSwap - swapAmount - gasFeeScrt
   else:
     return -1, -1, 0, 0, 0
@@ -119,3 +119,34 @@ def swapStkd(
   )
 
   return broadcastTxStkd(botInfo, msgExecuteSienna, msgExecuteStkd, msgSscrtToScrt)
+
+def calculate_gain_lossStkd( controler: BotInfo, newScrtBal, newSscrtBal, scrtPrice, amount_swapped):
+  gain = 0
+  if( not newScrtBal == controler.total[1] ):
+    gain = gain + newScrtBal * controler.total[2] - controler.total[1] * controler.total[2] 
+    controler.total[1] = newScrtBal
+  if( newSscrtBal > controler.total[0] ):
+    temp_scrt_amount = 0
+    cost_basis_gain = 0
+    while temp_scrt_amount < amount_swapped:
+      temp = [0,0]
+      indexhldr = index = 0
+      for things in controler.inv:
+        if( things[0] > temp[0] ):
+          temp = things
+          index = indexhldr
+        indexhldr = indexhldr + 1
+      if( temp[1] > amount_swapped - temp_scrt_amount ):
+        cost_basis_gain = cost_basis_gain + (amount_swapped - temp_scrt_amount) * temp[0]
+        controler.inv[index][1] = controler.inv[index][1] - (amount_swapped - temp_scrt_amount)
+        controler.inv.append([amount_swapped + newSscrtBal - controler.total[0], scrtPrice])
+        temp_scrt_amount = amount_swapped
+      else:
+        temp_scrt_amount = temp_scrt_amount + temp[1]
+        cost_basis_gain = cost_basis_gain + temp[1] * temp[0]
+        controler.inv.pop(index)
+        if( temp_scrt_amount == amount_swapped ):
+          controler.inv.append([amount_swapped + newSscrtBal - controler.total[0], scrtPrice])
+    gain = gain + (amount_swapped * scrtPrice - cost_basis_gain) + (newSscrtBal - controler.total[0]) * scrtPrice
+    controler.total[0] = newSscrtBal
+  return gain

@@ -7,7 +7,7 @@ from secret_sdk.client.lcd.wallet import Wallet
 from secret_sdk.core.auth.data.tx import StdFee
 from secret_sdk.key.mnemonic import MnemonicKey
 #from utils_taxes import read_inventory
-from config import inventory_locations
+from config import central_logs
 
 
 class BotInfo:
@@ -15,6 +15,7 @@ class BotInfo:
   asyncClient: AsyncLCDClient
   wallet: Wallet
   accAddr: str
+  wallet_name: str
   pairContractAddresses: Dict[str, str]
   pairContractQueries: Dict[Any, Any]
   pairContractHash: Dict[Any, Any]
@@ -37,6 +38,10 @@ class BotInfo:
     self.asyncClient = AsyncLCDClient(botConfig["clientInfo"]["endpoint"], botConfig["clientInfo"]["chainID"])
     self.wallet = self.client.wallet(MnemonicKey(mnemonic=botConfig["mkSeed"]))
     self.accAddr = self.wallet.key.acc_address
+    if( self.accAddr == "secret1j7gwujpne2dl8s0t34jduvd7ptq03g8z4f634p" ):
+      self.wallet_name = "arb_v2"
+    else:
+      self.wallet_name = "arb_v3"
     self.pairContractAddresses = botConfig["pairAddrs"]
     self.pairContractQueries = botConfig["pairQueries"]
     self.pairContractHash = {
@@ -58,15 +63,15 @@ class BotInfo:
     self.sequence = res.sequence
     self.logs = {
       "csv": botConfig["logLocation"],
-      "central": botConfig["centralLogLoc"],
+      "central": central_logs[self.wallet_name]["log"],
       "output": botConfig["outputLogLoc"],
     }
-    self.inventory_locations = inventory_locations
-    self.total = [] #scrt bal, scrt price, 
-    self.inv = self.read_inventory("arb_v3") #[price, amount]
+    self.inventory_locations = central_logs
+    self.total = [] #scrt bal, scrt price,
+    self.inv = self.read_inventory(self.wallet_name) #[price, amount]
 
   def read_inventory(self, wallet):
-    with open( self.inventory_locations[wallet], newline='') as csv_file:
+    with open( self.inventory_locations[wallet]["inv"], newline='') as csv_file:
       #self.enter(csv_file)
       logReader = csv.reader(csv_file, delimiter=',')
       inv = []
@@ -83,7 +88,7 @@ class BotInfo:
     return inv
 
   def write_inventory(self, wallet):
-    with open( self.inventory_locations[wallet], mode="w", newline="") as csv_file:
+    with open( self.inventory_locations[wallet]["inv"], mode="w", newline="") as csv_file:
       logWriter = csv.writer(csv_file, delimiter=',')
       logWriter.writerow(["total", self.total[0], self.total[1], self.total[2]])
       logWriter.writerow(["price", "amount"])

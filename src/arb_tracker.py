@@ -10,7 +10,7 @@ from env import endpoint
 from utils import getSSwapRatio, getSiennaRatio, calculateProfit, sync_next_block, optimumProfit
 from utils_stkd import arbTrackerStkd
 
-black_list = ["sscrt-swbtc-config", "sscrt-sxmr-config", "sscrt-sienna-config"]
+black_list = ["sscrt-swbtc-config", "sscrt-sxmr-config", "sscrt-seth-config"]
 
 async def main():
   client = LCDClient(endpoint, 'secret-4')

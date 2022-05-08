@@ -6,14 +6,20 @@ sscrtAdresses = {
   "SSCRT_KEY": viewing_keys["arb_v3"]["SSCRT_KEY"],
 }
 
-inventory_locations = {
-  "arb_v3": "../logs/inventory.csv"
+central_logs = {
+  "arb_v2": {
+    "inv": "../logs/arb_v2/inventory.csv",
+    "log": "../logs/arb_v2/log.csv"
+  },
+  "arb_v3": {
+    "inv": "../logs/arb_v3/inventory.csv",
+    "log": "../logs/arb_v3/log.csv"
+  }
 }
 
-central_logs = {
-  "arb_v2": "../logs/arb_v2/inventory.csv",
-  "arb_v3": "../logs/arb_v3/inventory.csv"
-}
+chain_id = "secret-4"
+sswap_query = { 'pool': {} }
+sienna_query = 'pair_info'
 
 config = {  
   "sscrt-shd-config": {
@@ -23,8 +29,8 @@ config = {
       "pair2": "secret1drm0dwvewjyy0rhrrw485q4f5dnfm6j25zgfe5", #SIENNA_SSCRT_SHD_PAIR
     },
     "pairQueries": {
-      "pair1": { 'pool': {} }, #SSWAP_QUERY
-      "pair2": 'pair_info', #SIENNA_QUERY
+      "pair1": sswap_query, #SSWAP_QUERY
+      "pair2": sienna_query, #SIENNA_QUERY
     },
     "token1First": {
       "pair1": True,
@@ -47,7 +53,7 @@ config = {
       "chainID": "secret-4"
     },
     "logLocation": "./../logs/sscrt-shd-csv.csv",
-    "centralLogLoc": "./../logs/log.csv",
+    "centralLogLoc": central_logs["arb_v3"]["log"],
     "outputLogLoc": "./../logs/sscrt-shd.log",
     "fee": {
       "gas": 200001,
@@ -61,8 +67,8 @@ config = {
       "pair2": "secret1m2lphcemd9f4faj9yvjyq876kfzdm0yvdartqa", #SIENNA_SSCRT_SETH_PAIR
     },
     "pairQueries": {
-      "pair1": { 'pool': {} }, #SSWAP_QUERY
-      "pair2": 'pair_info', #SIENNA_QUERY
+      "pair1": sswap_query, #SSWAP_QUERY
+      "pair2": sienna_query, #SIENNA_QUERY
     },
     "token1First": {
       "pair1": True,
@@ -82,10 +88,10 @@ config = {
     },
     "clientInfo": {
       "endpoint": endpoint,
-      "chainID": "secret-4"
+      "chainID": chain_id
     },
     "logLocation": "./../logs/sscrt-seth-csv.csv",
-    "centralLogLoc": "./../logs/log.csv",
+    "centralLogLoc": central_logs["arb_v3"]["log"],
     "outputLogLoc": "./../logs/sscrt-seth.log",
     "fee": {
       "gas": 200001,
@@ -99,8 +105,8 @@ config = {
       "pair2": "secret15cje8he9lazke3w7flqm2efse4p5fdjrjarv52", #SIENNA_SSCRT_SWBTC_PAIR
     },
     "pairQueries": {
-      "pair1": { 'pool': {} }, #SSWAP_QUERY
-      "pair2": 'pair_info', #SIENNA_QUERY
+      "pair1": sswap_query, #SSWAP_QUERY
+      "pair2": sienna_query, #SIENNA_QUERY
     },
     "token1First": {
       "pair1": True,
@@ -120,10 +126,10 @@ config = {
     },
     "clientInfo": {
       "endpoint": endpoint,
-      "chainID": "secret-4"
+      "chainID": chain_id
     },
     "logLocation": "./../logs/sscrt-swbtc-csv.csv",
-    "centralLogLoc": "./../logs/log.csv",
+    "centralLogLoc": central_logs["arb_v3"]["log"],
     "outputLogLoc": "./../logs/sscrt-seth.log",
     "fee": {
       "gas": 200001,
@@ -137,8 +143,8 @@ config = {
       "pair2": "secret1kdrjlga9qjazf0rv7ue8alyglepljlexwumv68", #SIENNA_SSCRT_SUSDT_PAIR
     },
     "pairQueries": {
-      "pair1": { 'pool': {} }, #SSWAP_QUERY
-      "pair2": 'pair_info', #SIENNA_QUERY
+      "pair1": sswap_query, #SSWAP_QUERY
+      "pair2": sienna_query, #SIENNA_QUERY
     },
     "token1First": {
       "pair1": True,
@@ -158,10 +164,10 @@ config = {
     },
     "clientInfo": {
       "endpoint": endpoint,
-      "chainID": "secret-4"
+      "chainID": chain_id
     },
     "logLocation": "./../logs/sscrt-susdt-csv.csv",
-    "centralLogLoc": "./../logs/log.csv",
+    "centralLogLoc": central_logs["arb_v3"]["log"],
     "outputLogLoc": "./../logs/sscrt-susdt.log",
     "fee": {
       "gas": 200001,
@@ -175,8 +181,8 @@ config = {
       "pair2": "secret10jr88entzckef4dxdk6pm8fpa09k87yzt0cwxd", #SIENNA_SXMR_SETH_PAIR
     },
     "pairQueries": {
-      "pair1": { 'pool': {} }, #SSWAP_QUERY
-      "pair2": 'pair_info', #SIENNA_QUERY
+      "pair1": sswap_query, #SSWAP_QUERY
+      "pair2": sienna_query, #SIENNA_QUERY
     },
     "token1First": {
       "pair1": False,
@@ -196,10 +202,10 @@ config = {
     },
     "clientInfo": {
       "endpoint": endpoint,
-      "chainID": "secret-4"
+      "chainID": chain_id
     },
     "logLocation": "./../logs/sscrt-seth-csv.csv",
-    "centralLogLoc": "./../logs/log.csv",
+    "centralLogLoc": central_logs["arb_v3"]["log"],
     "outputLogLoc": "./../logs/sscrt-seth.log",
     "fee": {
       "gas": 200001,
@@ -213,8 +219,8 @@ config = {
       "pair2": "secret1guphvlle6wzjswda3ceuuu6m6ty36t6w5jn9rv", #SIENNA_SSCRT_SIENNA_PAIR
     },
     "pairQueries": {
-      "pair1": { 'pool': {} }, #SSWAP_QUERY
-      "pair2": 'pair_info', #SIENNA_QUERY
+      "pair1": sswap_query, #SSWAP_QUERY
+      "pair2": sienna_query, #SIENNA_QUERY
     },
     "token1First": {
       "pair1": True,
@@ -234,10 +240,10 @@ config = {
     },
     "clientInfo": {
       "endpoint": endpoint,
-      "chainID": "secret-4"
+      "chainID": chain_id
     },
     "logLocation": "./../logs/sscrt-sienna-csv.csv",
-    "centralLogLoc": "./../logs/log.csv",
+    "centralLogLoc": central_logs["arb_v3"]["log"],
     "outputLogLoc": "./../logs/sscrt-sienna.log",
     "fee": {
       "gas": 200001,
@@ -254,8 +260,8 @@ configStdk = {
       "pair2": "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct", #SIENNA_SSCRT_STKD_PAIR
     },
     "pairQueries": {
-      "pair1": { 'pool': {} }, #SSWAP_QUERY
-      "pair2": 'pair_info', #SIENNA_QUERY
+      "pair1": sswap_query, #SSWAP_QUERY
+      "pair2": sienna_query, #SIENNA_QUERY
     },
     "token1First": {
       "pair1": True,
@@ -275,10 +281,10 @@ configStdk = {
     },
     "clientInfo": {
       "endpoint": endpoint,
-      "chainID": "secret-4"
+      "chainID": chain_id
     },
     "logLocation": "./../logs/sscrt-stkd-csv.csv",
-    "centralLogLoc": "./../logs/log.csv",
+    "centralLogLoc": central_logs["arb_v2"]["log"],
     "outputLogLoc": "./../logs/sscrt-stkd.log",
     "fee": {
       "gas": 350001,
