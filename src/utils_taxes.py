@@ -1,19 +1,19 @@
 import csv
 
 from BotInfo import BotInfo
-from config import config
+from config import configStdk
 from utils import calculate_gain_loss, log_traceback, recordTx
 
 def swap_simulations():
-    botinfo = BotInfo(config["sscrt-shd-config"])
-    #botinfo.read_inventory("arb_v2")
-    #gain = calculate_gain_loss(botinfo, 29, 655, 3.6, 300)
-    #print(botinfo.total)
-    #print(botinfo.inv)
-    #botinfo.write_inventory("arb_v2")
-    #print(gain)
-    printout = recordTx(botinfo, "sscrt-test-test",200,12,"arb_v3")
-    print(printout)
+    botinfo = BotInfo(configStdk)
+    botinfo.read_inventory("arb_v2")
+    gain = calculate_gain_loss(botinfo, 31, 400, 3.6, 300)
+    print(botinfo.total)
+    print(botinfo.inv)
+    botinfo.write_inventory("arb_v2")
+    print(gain)
+    #printout = recordTx(botinfo, "sscrt-test-test",200,12,"arb_v3")
+    #print(printout)
 
 swap_simulations()
 
