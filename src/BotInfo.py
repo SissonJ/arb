@@ -1,5 +1,5 @@
 import csv
-#import fcntl
+import fcntl
 import time
 from typing import Any, Dict, List
 from secret_sdk.client.lcd.lcdclient import AsyncLCDClient, LCDClient
@@ -94,12 +94,12 @@ class BotInfo:
       logWriter.writerow(["price", "amount"])
       for prices in self.inv:
         logWriter.writerow([prices[0], prices[1]])
-      #fcntl.flock(csv_file, fcntl.LOCK_UN)
+      fcntl.flock(csv_file, fcntl.LOCK_UN)
 
   def enter(self, file):
     while True:
       try:
-        #fcntl.flock(file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        fcntl.flock(file, fcntl.LOCK_EX | fcntl.LOCK_NB)
         break
       except (OSError, IOError) as ex:
         pass

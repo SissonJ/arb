@@ -1,6 +1,7 @@
 from cmath import sqrt
 import csv
 from datetime import datetime
+import fcntl
 import time
 
 import requests
@@ -140,6 +141,6 @@ def recordTxStkd(botInfo: BotInfo, pair, amountSwapped, ratio, wallet):
     logWriter = csv.writer(csv_file, delimiter=',')
     #date, time, pair, stkd-sscrt/usd, scrt bal, sscrtBal, t2/sscrt, t2Bal, amount traded, gain/loss
     logWriter.writerow([datetime.now().date(), datetime.now().time(), pair,  data["stkd-scrt"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped, gain])
-    #fcntl.flock(csv_file, fcntl.LOCK_UN)
+    fcntl.flock(csv_file, fcntl.LOCK_UN)
 
   return t2Bal, scrtBal

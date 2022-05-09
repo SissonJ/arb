@@ -1,5 +1,5 @@
 import base64
-#import fcntl
+import fcntl
 from math import sqrt
 import time
 import csv
@@ -331,7 +331,7 @@ def recordTx(botInfo: BotInfo, pair, amountSwapped, ratio, wallet):
     logWriter = csv.writer(csv_file, delimiter=',')
     #date, time, pair, sscrt/usd, scrt bal, sscrtBal, t2/sscrt, t2Bal, amount traded, gain/loss
     logWriter.writerow([datetime.now().date(), datetime.now().time(), pair,  data["secret"]["usd"], scrtBal, t1Bal, ratio, t2Bal, amountSwapped, gain])
-    #fcntl.flock(csv_file, fcntl.LOCK_UN)
+    fcntl.flock(csv_file, fcntl.LOCK_UN)
 
   return t1Bal
 
