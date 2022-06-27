@@ -143,7 +143,7 @@ def calculateProfitOptimized(s1t2,s1t1,s2t2,s2t1, max, gasFeeScrt):
   profit = secondSwap - amountToSwap - gasFeeScrt
   return amountToSwap, profit, firstSwap, secondSwap
 
-def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
+async def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
 
   stdSignMsg = StdSignMsg.from_data({
     "chain_id": "secret-4",
@@ -158,7 +158,7 @@ def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
 
   tx = botInfo.wallet.key.sign_tx(stdSignMsg)
   try:
-    res = botInfo.client.tx.broadcast(tx)
+    res = await botInfo.asyncClient.tx.broadcast_async(tx)
     #print(res)
     return res
   except Exception as e:
@@ -181,7 +181,7 @@ def createMsgExecuteSienna(botInfo: BotInfo, expectedReturn, amountToSwap, contr
   msgExecuteSienna = botInfo.client.wasm.contract_execute_msg(botInfo.accAddr, contractAddr, handleMsgSienna, [], contractHash, nonce, txEncryptionKey)
   return msgExecuteSienna
 
-def swapSienna(
+async def swapSienna(
     botInfo: BotInfo,
     sscrtBal, 
     minExpected,
@@ -217,9 +217,9 @@ def swapSienna(
     txEncryptionKeyDict["second"],
   )
   
-  return broadcastTx(botInfo, msgExecuteSienna, msgExecuteSswap)
+  return await broadcastTx(botInfo, msgExecuteSienna, msgExecuteSswap)
 
-def swapSswap(
+async def swapSswap(
     botInfo: BotInfo,
     sscrtBal, 
     minExpected,
@@ -255,7 +255,7 @@ def swapSswap(
     txEncryptionKeyDict["second"]
   )
 
-  return broadcastTx(botInfo, msgExecuteSswap, msgExecuteSienna)  
+  return await broadcastTx(botInfo, msgExecuteSswap, msgExecuteSienna)  
 
 def generateTxEncryptionKeys(client: LCDClient):
   nonceDict = {"first":client.utils.generate_new_seed(), "second":client.utils.generate_new_seed()}
@@ -283,6 +283,8 @@ def txHandle(logLocation, txResponse, profit, runningProfit, lastHeight, amountS
   return True
 
 def calculate_gain_loss( controler: BotInfo, newScrtBal, newSscrtBal, scrtPrice, amount_swapped):
+  if amount_swapped > controler.total[0]:
+    amount_swapped = controler.total[0]
   gain = 0
   if( not newScrtBal == controler.total[1] ):
     gain = gain + newScrtBal * controler.total[2] - controler.total[1] * controler.total[2] 
@@ -311,7 +313,34 @@ def calculate_gain_loss( controler: BotInfo, newScrtBal, newSscrtBal, scrtPrice,
           controler.inv.append([scrtPrice, amount_swapped + newSscrtBal - controler.total[0]])
     gain = gain + (amount_swapped * scrtPrice - cost_basis_gain) + (newSscrtBal - controler.total[0]) * scrtPrice
     controler.total[0] = newSscrtBal
+  rebalance(controler)
   return gain
+
+def rebalance(controller: BotInfo):
+  sum = 0
+  for price_amount_pairs in controller.inv:
+    sum = sum + price_amount_pairs[1]
+  if not sum == controller.total[0]:
+    temp_max = -10
+    indexhldr = 0
+    i = 0
+    for price_amount_pairs in controller.inv:
+      if price_amount_pairs[0] > temp_max:
+        temp_max = price_amount_pairs[0]
+        indexhldr = i
+      i = i + 1
+    if sum < controller.total[0]:
+      controller.inv[indexhldr][1] = controller.inv[indexhldr][1] + (controller.total[0] - sum)
+    if sum > controller.total[0]:
+      controller.inv[indexhldr][1] = controller.inv[indexhldr][1] - (sum - controller.total[0])
+      non_negative = controller.inv[indexhldr][1]
+      while non_negative < 0:
+        controller.inv.pop(indexhldr)
+        indexhldr = indexhldr-1
+        controller.inv[indexhldr][1] = controller.inv[indexhldr][1] + non_negative
+        non_negative = controller.inv[indexhldr][1]
+    
+
 
 def recordTx(botInfo: BotInfo, pair, amountSwapped, ratio, wallet):
   scrtBal, t1Bal, t2Bal = getBalances(botInfo)

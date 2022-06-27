@@ -2,6 +2,7 @@ import asyncio
 import csv
 from datetime import datetime
 import sys
+import time
 import traceback
 from secret_sdk.exceptions import LCDResponseError
 
@@ -36,6 +37,7 @@ async def main():
       continue
     try:
       height = sync_next_block(botInfo.client, lastHeight)
+      start_time = time.time()
       lastHeight = height
       txResponse = ""
       sswapRatio, sswapt1, sswapt2,siennaRatio, siennat1, siennat2 = await runAsyncQueries(
@@ -63,7 +65,7 @@ async def main():
         optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfitOptimized(
           siennat2, siennat1, sswapt2, sswapt1, maxAmountSwapping, gasFeeScrt)
       if(profit > .05 and difference > 0):
-        txResponse = swapSswap(
+        txResponse = await swapSswap(
           botInfo,
           optimumAmountSwapping,
           optimumAmountSwapping + gasFeeScrt,
@@ -72,7 +74,7 @@ async def main():
           txEncryptionKeyDictSwap,
         )
       if(profit > .05 and difference < 0):
-        txResponse = swapSienna(
+        txResponse = await swapSienna(
           botInfo,
           optimumAmountSwapping,
           optimumAmountSwapping + gasFeeScrt,
@@ -98,7 +100,7 @@ async def main():
         lastHeight = height
         with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
           logWriter = csv.writer(csv_file, delimiter=',')
-          logWriter.writerow([datetime.now().date(), datetime.now().time(),"Attempted", nonceDictSwap["first"], nonceDictSwap["second"]])
+          logWriter.writerow([datetime.now().date(), datetime.now().time(),"Attempted", time.time()-start_time , nonceDictSwap["first"], nonceDictSwap["second"]])
         maxAmountSwapping = recordTx(botInfo, sys.argv[1], optimumAmountSwapping, (siennaRatio + sswapRatio)/2, "arb_v3")
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       botInfo.sequence = botInfo.wallet.sequence()

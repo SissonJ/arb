@@ -75,3 +75,6 @@ class AsyncTxBroadcastResult(JSONSerializable):
 def is_tx_error(result: Union[BlockTxBroadcastResult, SyncTxBroadcastResult]):
     """Returns whether the transaction failed."""
     return result.code is not None
+
+def decrypt_tx_logs(result: Union[BlockTxBroadcastResult, SyncTxBroadcastResult, AsyncTxBroadcastResult], nonces: List):
+    pass

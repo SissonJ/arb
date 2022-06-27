@@ -15,7 +15,7 @@ from secret_sdk.key.key import Key
 from secret_sdk.key.mnemonic import MnemonicKey
 from secret_sdk.client.lcd.lcdclient import AsyncLCDClient
 from secret_sdk.core.auth.data.tx import StdTx
-from utils import calculateProfitCP, constantProduct, getSiennaRatio, createMsgExecuteSienna, optimumSwapAmountStdk
+from utils import calculateProfitCP, constantProduct, getSiennaRatio, createMsgExecuteSienna
 from miscreant.aes.siv import SIV
 from datetime import datetime
 import sys
@@ -65,20 +65,36 @@ config = {
 
 
 def decryptTxResponse():
-  nonce = [232, 29, 21, 200, 12, 194, 1, 32, 153, 211, 211, 216, 90, 229, 205, 148, 122, 101, 224, 148, 179, 186, 47, 86, 16, 197, 94, 34, 103, 17, 227, 50]
+  nonce = [1, 113, 36, 99, 111, 48, 190, 132, 166, 75, 26, 115, 242, 88, 128, 38, 92, 170, 158, 110, 144, 84, 199, 231, 50, 56, 235, 218, 199, 141, 108, 101]
   client = LCDClient(endpoint, 'secret-4')
   txKey = client.utils.get_tx_encryption_key(nonce)
   txResponse = {'height': 2694802, 'txhash': 'AC326DA80C96F834AC688B114A16DB521439204B65CB393CF1E3C745198D380D', 'raw_log': 'failed to execute message; message index: 0: encrypted: NhDWzAa0SwyBqYMTpiFPcOarHLFSkyZ4G7ZFgdRu/UjYi6wjXC3Qttzut8beioL3nFzzD11y6THgJ5kUA2AooZH56hUcrA5/hSU0t2W7diloYXB2vlIQgj0=: execute contract failed', 'gas_wanted': 200000, 'gas_used': 23852, 'logs': None, 'code': 3, 'codespace': 'compute'}
+  print(txKey)
   raw_log = txResponse["raw_log"][txResponse["raw_log"].find("encrypted"):txResponse["raw_log"].find("contract")][11:-9]
   #print(raw_log == "NhDWzAa0SwyBqYMTpiFPcOarHLFSkyZ4G7ZFgdRu/UjYi6wjXC3Qttzut8beioL3nFzzD11y6THgJ5kUA2AooZH56hUcrA5/hSU0t2W7diloYXB2vlIQgj0=:")
-  encoded_result = base64.b64decode(bytes("ECHs8TkQv7RqpAHGSZ/7Dq2aA1k4zxp6EwQWUZRsl82ywchWLESNk5RXDloMu8Tf96S5gnIYGQ/9jeVagrxc0eTJrAgMsq99jBgBEfk4ewzIC4gEH/G9dgE=:", "utf-8"))
-  siv = SIV(txKey)
-  decrypted = siv.open(encoded_result, [bytes()])
-  #decrypted = asyncio.get_event_loop().run_until_complete(client.utils.decrypt_data_field(hex(int(raw_log,16)), nonce) )
+  decoded_result = base64.b64decode("eVfUwZf26iX6am/49tLT0LLmYdvj78lvVQ0wqqLJNTi9UUlOgi4XNny/0F/Mv0E+ednw6yZcY5WahBdzy+pqt3xEogdJ1m+mTEQjCtzx1zyuuncCkiAtDY3iuySQ3EMT5IvOOZQ=")
+  print(decoded_result)
+  #siv = SIV(txKey)
+  #decrypted = siv.open(encoded_result, [bytes()])
+  decrypted = client.utils.decrypt(decoded_result, nonce, txKey)
+  print(decrypted)
   print(json.loads(base64.b64decode(decrypted)))
   #print(encryptedBytes)
 
-#decryptTxResponse()
+decryptTxResponse()
+
+def encrypt_decrypt():
+  nonce = [249, 202, 181, 154, 152, 224, 174, 20, 235, 146, 3, 10, 113, 76, 153, 251, 111, 233, 51, 52, 135, 11, 168, 205, 152, 192, 169, 215, 175, 73, 90, 83]
+  client = LCDClient(endpoint, 'secret-4')
+  txKey = client.utils.get_tx_encryption_key(nonce)
+  plaintext = bytes("I will encrypt and decrypt this", "utf-8")
+  siv = SIV(txKey)
+  ciphertext = siv.seal(plaintext, [bytes()])
+  print(ciphertext)
+  decrypt = siv.open(ciphertext, [bytes()])
+  print(decrypt)
+
+#encrypt_decrypt()
 
 def main():
   controller = BotInfo(config)
@@ -335,4 +351,4 @@ def swap_simulation_for_gain_loss():
   controller = BotInfo(cfg["sscrt-shd-config"])
   print(controller.inv)
 
-swap_simulation_for_gain_loss()
+#swap_simulation_for_gain_loss()
