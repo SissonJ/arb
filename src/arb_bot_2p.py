@@ -45,6 +45,8 @@ async def main():
         nonceDictQuery, 
         txEncryptionKeyDictQuery
       )
+      print("queries took this much time: ", time.time() - start_time)
+      print(sswapRatio, siennaRatio)
     except Exception as e:
       with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
         logWriter = csv.writer(csv_file, delimiter=',')
@@ -118,4 +120,5 @@ async def main():
       lastLoopIsError = True
       continue
 
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 asyncio.run(main())

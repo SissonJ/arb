@@ -123,7 +123,6 @@ class AsyncLCDUtils(BaseAsyncAPI):
         tx_encryption_key = HKDF(
             algorithm=hashes.SHA256(), length=32, salt=hkdf_salt, info=b"", backend=None
         ).derive(master_secret)
-
         return tx_encryption_key
 
     async def encrypt(
@@ -144,7 +143,6 @@ class AsyncLCDUtils(BaseAsyncAPI):
 
         plaintext = bytes(contract_code_hash, "utf-8") + bytes(msg, "utf-8")
         ciphertext = siv.seal(plaintext, [bytes()])
-
         key_dump = self.pubkey.public_bytes(
             encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
         )

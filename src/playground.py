@@ -3,7 +3,7 @@ import base64
 import json
 import time
 from typing import Optional
-from BotInfo import BotInfo
+#from BotInfo import BotInfo
 from env import testnet
 from env import endpoint
 from env import mkSeed
@@ -15,16 +15,16 @@ from secret_sdk.key.key import Key
 from secret_sdk.key.mnemonic import MnemonicKey
 from secret_sdk.client.lcd.lcdclient import AsyncLCDClient
 from secret_sdk.core.auth.data.tx import StdTx
-from utils import calculateProfitCP, constantProduct, getSiennaRatio, createMsgExecuteSienna
+#from utils import calculateProfitCP, constantProduct, getSiennaRatio, createMsgExecuteSienna
 from miscreant.aes.siv import SIV
 from datetime import datetime
 import sys
 
-from BotInfo import BotInfo
+#from BotInfo import BotInfo
 from config import config as cfg
-from utils import generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio 
-from utils import calculateProfit, swapSienna, swapSswap, recordTx
-from utils_async import getSSwapRatioAsync
+#from utils import generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio 
+#from utils import calculateProfit, swapSienna, swapSswap, recordTx
+#from utils_async import getSSwapRatioAsync
 
 config = {
   "mkSeed": mkSeed,
@@ -81,7 +81,7 @@ def decryptTxResponse():
   print(json.loads(base64.b64decode(decrypted)))
   #print(encryptedBytes)
 
-decryptTxResponse()
+#decryptTxResponse()
 
 def encrypt_decrypt():
   nonce = [249, 202, 181, 154, 152, 224, 174, 20, 235, 146, 3, 10, 113, 76, 153, 251, 111, 233, 51, 52, 135, 11, 168, 205, 152, 192, 169, 215, 175, 73, 90, 83]
@@ -352,3 +352,9 @@ def swap_simulation_for_gain_loss():
   print(controller.inv)
 
 #swap_simulation_for_gain_loss()
+
+def encryption_test():
+  client = LCDClient(endpoint, "secret-4")
+  print(client.utils.encrypt("20a015a72cb7892680814a88308b76275c06fec7ecc7c0bcd55d0f87ee071591", {"get_config":{}}))
+
+encryption_test()

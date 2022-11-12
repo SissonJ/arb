@@ -1,5 +1,5 @@
 import base64
-import fcntl
+#import fcntl
 from math import sqrt
 import time
 import csv

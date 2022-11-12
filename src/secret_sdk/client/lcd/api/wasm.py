@@ -80,6 +80,7 @@ class AsyncWasmAPI(BaseAsyncAPI):
             contract_code_hash = await self._c._get(
                 f"/wasm/contract/{contract_address}/code-hash"
             )
+            contract_code_hash = contract_code_hash
             _contract_code_hash[contract_address] = contract_code_hash
         return _contract_code_hash[contract_address]
 
@@ -142,6 +143,7 @@ class AsyncWasmAPI(BaseAsyncAPI):
                 self.contract_hash(contract_address)
             )
 
+        print(msg_str)
         encrypted_msg = await BaseAsyncAPI._try_await(
             self._c.utils.encrypt(contract_code_hash, msg_str, nonce, tx_encryption_key)
         )
