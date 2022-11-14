@@ -12,27 +12,32 @@ from utils import calculateProfitOptimized, log_traceback, sync_next_block
 from utils import swapSienna, swapSswap, recordTx, generateTxEncryptionKeys
 from utils_async import runAsyncQueries, generateTxEncryptionKeysAsync
 
+from env import nonce
+
 async def main():
 
   botInfo = BotInfo(config[sys.argv[1]])
 
-  nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
-  nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeysAsync(botInfo.asyncClient)
+  txEncryptionKey = await botInfo.asyncClient.utils.get_tx_encryption_key(nonce)
+  nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
+
+  print(txEncryptionKey)
 
   keepLooping = True
   txResponse = ""
   maxAmountSwapping = botInfo.total[0] - 5
   optimumAmountSwapping = height = lastHeight = lastProfit = 0
   lastLoopIsError = False
-  gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/4000000)*2.5
+  gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/10000000)*2.5
+  print(gasFeeScrt)
   with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
     logWriter.writerow([datetime.now().date(), datetime.now().time(),"Starting loop"])
   while keepLooping:
+    print("starting")
     if lastLoopIsError:
       botInfo.sequence = botInfo.wallet.sequence()
-      nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
-      nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeysAsync(botInfo.asyncClient)
+      nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
       lastLoopIsError = False
       continue
     try:
@@ -42,8 +47,8 @@ async def main():
       txResponse = ""
       sswapRatio, sswapt1, sswapt2,siennaRatio, siennat1, siennat2 = await runAsyncQueries(
         botInfo, 
-        nonceDictQuery, 
-        txEncryptionKeyDictQuery
+        nonce,
+        txEncryptionKey,
       )
       print("queries took this much time: ", time.time() - start_time)
       print(sswapRatio, siennaRatio)
@@ -66,23 +71,25 @@ async def main():
       if(difference < 0 ):
         optimumAmountSwapping, profit, firstSwap, secondSwap = calculateProfitOptimized(
           siennat2, siennat1, sswapt2, sswapt1, maxAmountSwapping, gasFeeScrt)
-      if(profit > .05 and difference > 0):
+      print(profit, optimumAmountSwapping, firstSwap, secondSwap)
+      print(nonceDict)
+      if(difference>0):#profit > .05 and difference > 0):
         txResponse = await swapSswap(
           botInfo,
           optimumAmountSwapping,
           optimumAmountSwapping + gasFeeScrt,
           firstSwap,
-          nonceDictSwap,
-          txEncryptionKeyDictSwap,
+          nonceDict,
+          txEncryptionKeyDict,
         )
-      if(profit > .05 and difference < 0):
+      if(difference<0):#profit > .05 and difference < 0):
         txResponse = await swapSienna(
           botInfo,
           optimumAmountSwapping,
           optimumAmountSwapping + gasFeeScrt,
           firstSwap,
-          nonceDictSwap,
-          txEncryptionKeyDictSwap,
+          nonceDict,
+          txEncryptionKeyDict,
         )
       if(profit > lastProfit + .1 or profit < lastProfit - .1 or profit > .05):
         with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
@@ -98,17 +105,16 @@ async def main():
           logWriter.writerow([rows])
     try:
       if( txResponse != ""):
+        nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
         height = sync_next_block(botInfo.client, lastHeight)
         lastHeight = height
         with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
           logWriter = csv.writer(csv_file, delimiter=',')
-          logWriter.writerow([datetime.now().date(), datetime.now().time(),"Attempted", time.time()-start_time , nonceDictSwap["first"], nonceDictSwap["second"]])
+          logWriter.writerow([datetime.now().date(), datetime.now().time(),"Attempted", time.time()-start_time ])
         maxAmountSwapping = recordTx(botInfo, sys.argv[1], optimumAmountSwapping, (siennaRatio + sswapRatio)/2, "arb_v3")
         #scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
       botInfo.sequence = botInfo.wallet.sequence()
-      nonceDictSwap, txEncryptionKeyDictSwap = generateTxEncryptionKeys(botInfo.client)
-      nonceDictQuery, txEncryptionKeyDictQuery = await generateTxEncryptionKeysAsync(botInfo.asyncClient)
-      keepLooping = True #set to false for only one run
+      keepLooping = False #set to false for only one run
     except Exception as e:
       with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
         logWriter = csv.writer(csv_file, delimiter=',')
@@ -118,6 +124,7 @@ async def main():
           for rows in traceback:
             logWriter.writerow([rows])
       lastLoopIsError = True
+      keepLooping = False
       continue
 
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())

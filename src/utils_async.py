@@ -36,9 +36,9 @@ async def getSiennaRatioAsync(botInfo: BotInfo, nonce: Optional[int] = 0, tx_enc
     token2Amount = float(siennaInfo['pair_info']['amount_0']) * 10**-botInfo.tokenDecimals["token2"]
   return token1Amount/token2Amount, token1Amount, token2Amount
 
-async def runAsyncQueries(botInfo: BotInfo, nonceDict, txEncryptionKeyDict):
-  task1 = asyncio.create_task(getSSwapRatioAsync(botInfo, nonceDict["first"], txEncryptionKeyDict["first"]))
-  task2 = asyncio.create_task(getSiennaRatioAsync(botInfo, nonceDict["second"], txEncryptionKeyDict["second"]))
+async def runAsyncQueries(botInfo: BotInfo, nonce, txEncryptionKey):
+  task1 = asyncio.create_task(getSSwapRatioAsync(botInfo, nonce, txEncryptionKey))
+  task2 = asyncio.create_task(getSiennaRatioAsync(botInfo, nonce, txEncryptionKey))
   sswapRatio, sswapt1, sswapt2 = await task1
   siennaRatio, siennat1, siennat2 = await task2
   return sswapRatio, sswapt1, sswapt2, siennaRatio, siennat1, siennat2

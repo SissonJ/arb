@@ -143,7 +143,6 @@ class AsyncWasmAPI(BaseAsyncAPI):
                 self.contract_hash(contract_address)
             )
 
-        print(msg_str)
         encrypted_msg = await BaseAsyncAPI._try_await(
             self._c.utils.encrypt(contract_code_hash, msg_str, nonce, tx_encryption_key)
         )

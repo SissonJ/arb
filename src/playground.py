@@ -3,6 +3,7 @@ import base64
 import json
 import time
 from typing import Optional
+from BotInfo import BotInfo
 #from BotInfo import BotInfo
 from env import testnet
 from env import endpoint
@@ -22,6 +23,7 @@ import sys
 
 #from BotInfo import BotInfo
 from config import config as cfg
+from utils import calculateProfit, generateTxEncryptionKeys, getSSwapRatio, getSiennaRatio, swapSienna, swapSswap, sync_next_block
 #from utils import generateTxEncryptionKeys, sync_next_block, checkScrtBal, getSiennaRatio, getSSwapRatio 
 #from utils import calculateProfit, swapSienna, swapSswap, recordTx
 #from utils_async import getSSwapRatioAsync
@@ -195,8 +197,8 @@ async def runAsyncQueries(botInfo, nonceDict, txEncryptionKeyDict):
   await botInfo.client.session.close()
   return SSratio, SIratio, SStoken1Amount, SItoken1Amount, SStoken2Amount, SItoken1Amount
 
-def oneRun():
-  cfg[sys.argv[1]]["mkSeed"] = mkSeed2
+async def oneRun():
+  cfg[sys.argv[1]]["mkSeed"] = mkSeed
 
   botInfo = BotInfo(cfg[sys.argv[1]])
 
@@ -236,19 +238,20 @@ def oneRun():
   if(height != lastHeight + 1 and lastHeight != 0):
     print(datetime.now(), "blocks skipped:", height - lastHeight)
   lastHeight = height
-  if(False and difference > 0):
-    txResponse = swapSswap(
+  print(difference)
+  if( difference > 0):
+    txResponse = await swapSswap(
       botInfo,
-      10,
+      .0001,
       firstSwap,
       secondSwap,
       nonceDict,
       txEncryptionKeyDict,
     )
-  if(False and difference < 0):
-    txResponse = swapSienna(
+  if(difference < 0):
+    txResponse = await swapSienna(
       botInfo,
-      10,
+      .0001,
       firstSwap,
       secondSwap,
       nonceDict,
@@ -260,45 +263,59 @@ def oneRun():
     else:
       runningProfit += profit
       print(datetime.now(), "Success! Running profit:", runningProfit)
-    recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
+    #recordTx(botInfo, config[sys.argv[1]]["logLocation"], optimumAmountSwapping, (siennaRatio + sswapRatio)/2)
     nonceDict, txEncryptionKeyDict = generateTxEncryptionKeys(botInfo.client)
     botInfo.sequence = botInfo.wallet.sequence()
     scrtBal = int(botInfo.client.bank.balance(botInfo.accAddr).to_data()[0]["amount"]) * 10**-6
   nonceDictPair, txEncryptionKeyDictPair = generateTxEncryptionKeys(botInfo.client)
-  keepLooping = True #set to false for only one run
+  keepLooping = False #set to false for only one run
 
-#oneRun()
+#asyncio.run(oneRun())
+
+async def decryptTry2():
+  client = LCDClient(endpoint, "secret-4")
+  data = "0A9A030A2A2F7365637265742E636F6D707574652E763162657461312E4D736745786563757465436F6E747261637412EB020AE80269D4D3899EE7E1F6DBED0CB810FE1CA7D42761CC66DE9CC3E6111FFED245F42696DF18558BD8BD71EC355134B1A716A39BBACB8B08BA94545E2CF782EF424A8F3289D517D9F5632F94003FA977796C80161017D2B82689E5C7D6B0864D9F6E2C592A420E856422A2ABFB2F302B2906737D3DC267EDCFFE1D69D9F557D2C1007C2912A58421AACB7EBDF57AF066EF345E39C19249F70D4B1219CE7B84FCE097D9EA8E7318DAFC14C78C0BE8E44350F31500973350E78B61A2482F8461495265DC11DB3E6446E04F736DC700F58D28BD2D5154B4B621B79CE3DD0F4FDE7962717D5FC3C62161C8677564ECF7E63D9DDAC33A074635889CB4E8F01F8ADD54BC62A972BA2491670208D60968F39CCDE31FD8EA9E0191DBA523D625867F7E0D4878894E924BD50327F97BD288E36F1F9544D3EA6B483105FC2C6E5CAF257CDA2CACF20BC7118F7F01E7BF2A824549384EC58C7F8DBF38BF76EB1A73F014CC60661D98C53B77AF710D7B630A9A030A2A2F7365637265742E636F6D707574652E763162657461312E4D736745786563757465436F6E747261637412EB020AE8021F95D3C46E65122C37E1C0FA8313C1487EA3E38FF2C472F9C268297BA3E065892F2788F0591D194927BFCF12112FF7A3CB173410941C3D9D6C0C5FD8160A73647A99BEF6A8D71EF015F612E75FE39D8C29F03F5CED6F625B95D3145277DEE7732D0AD1A1D06285605E0F161DBEC133EF4CF90FE54ABF00BE228D82B17ECCC9F8A78269555FD4A63C908C8A8B5FE4D6CCEAF682C273AE060E08428AA14E7D4850A972CE4686F4F5A5D887E79E8745B632F150F5277912A411D9030B608903D61DCC6F405AD6F0EE23061BE152A872D1CDA72A97538F44813EE81925C343AB41921A051F166D77E7E27E63589BACBE9BFBFF1F144D4B6A5BEB558B7B5683E9643BA99264DA30848439EB5CD1935F8AF5122B215820A37B22D94D0960376EB49FF21EC1875AF5E2AEA3C3DF8A67129133C0CDC2C2C84A3368B955EB809A431559A63AF66A301317D35AF71DEFDFED81B0711D6C07B37E9167C6E75A66DB427D02CB83288A021A44A763"
+  nonces = [[223, 112, 119, 87, 169, 64, 52, 71, 195, 191, 8, 170, 51, 226, 80, 35, 193, 242, 219, 34, 184, 167, 219, 237, 205, 54, 229, 106, 146, 59, 157, 210],[211, 33, 151, 192, 229, 64, 198, 197, 121, 220, 250, 55, 48, 0, 31, 98, 65, 16, 95, 14, 190, 5, 251, 83, 31, 136, 65, 30, 129, 129, 187, 231] ]
+  key1 = client.utils.get_tx_encryption_key(nonces[0])
+  key1 = client.utils.get_tx_encryption_key(nonces[1])
+  encreyted_bytes = base64.encode()
+  res = await client.utils.decrypt_data_field(data, nonces)
+
+  print(res)
+
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+asyncio.run(decryptTry2())
 
 def swapTest():
-  res = ""
+  print(endpoint)
   client = LCDClient(endpoint, "secret-4")
   wallet = client.wallet(MnemonicKey(mkSeed))
   print(wallet.account_number_and_sequence())
   msgSienna = json.dumps({"swap":{"to":None,"expected_return":"0"}})
   encryptedMsgSienna = str( base64.b64encode(msgSienna.encode("utf-8")), "utf-8")
   handleMsgSienna = { "send": {"recipient": "secret155ycxc247tmhwwzlzalakwrerde8mplhluhjct", "amount": "100", "msg": encryptedMsgSienna }}
-  #res = wallet.execute_tx("secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", handleMsgSienna, "", [])
+  res = wallet.execute_tx("secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", handleMsgSienna, "", [])
   print("stkdscrt to sscrt",res)
   #asyncio.sleep(6)
   #res = wallet.execute_tx("secret1k0jntykt7e4g3y88ltc60czgjuqdy4c9e8fzek", {"redeem":{"amount": "100"}}, "", [])
-  print("sscrt to scrt", res)
+  #print("sscrt to scrt", res)
   #asyncio.sleep(6)
   #res = wallet.execute_tx("secret1k6u0cy4feepm6pehnz804zmwakuwdapm69tuc4", {"stake": {}}, "",Coins.from_str("100"+"uscrt"),gas=300000)
-  executeMsg = client.wasm.contract_execute_msg(wallet.key.acc_address, "secret1k6u0cy4feepm6pehnz804zmwakuwdapm69tuc4", {"stake": {}},Coins.from_str("10000"+"uscrt"))
-  stdSignMsg = StdSignMsg.from_data({
-    "chain_id": "secret-4",
-    "account_number": wallet.account_number(),
-    "sequence": wallet.sequence(),
-    "fee": StdFee(500001,"125000uscrt").to_data(),
-    "msgs": [],
-    "memo": "",
-  })
+  #executeMsg = client.wasm.contract_execute_msg(wallet.key.acc_address, "secret1k6u0cy4feepm6pehnz804zmwakuwdapm69tuc4", {"stake": {}},Coins.from_str("10000"+"uscrt"))
+  #stdSignMsg = StdSignMsg.from_data({
+  #  "chain_id": "secret-4",
+  #  "account_number": wallet.account_number(),
+  #  "sequence": wallet.sequence(),
+  #  "fee": StdFee(500001,"125000uscrt").to_data(),
+  #  "msgs": [],
+  #  "memo": "",
+  #})
 
-  stdSignMsg.msgs = [executeMsg]
-  print(stdSignMsg)
-  tx = wallet.key.sign_tx(stdSignMsg)
-  res = client.tx.broadcast(tx)
-  print("scrt to stkdscrt", res)
+  #stdSignMsg.msgs = [executeMsg]
+  #print(stdSignMsg)
+  #tx = wallet.key.sign_tx(stdSignMsg)
+  #res = client.tx.broadcast(tx)
+  #print("scrt to stkdscrt", res)
 
 #swapTest()
 
@@ -357,4 +374,4 @@ def encryption_test():
   client = LCDClient(endpoint, "secret-4")
   print(client.utils.encrypt("20a015a72cb7892680814a88308b76275c06fec7ecc7c0bcd55d0f87ee071591", {"get_config":{}}))
 
-encryption_test()
+#encryption_test()

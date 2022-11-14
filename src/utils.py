@@ -158,13 +158,16 @@ async def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
 
   tx = botInfo.wallet.key.sign_tx(stdSignMsg)
   try:
-    res = await botInfo.asyncClient.tx.broadcast_async(tx)
-    #print(res)
+    #print("BROADCASTING")
+    res = await botInfo.asyncClient.tx.broadcast(tx)
+    print(res)
     return res
   except Exception as e:
-    with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
-      logWriter = csv.writer(csv_file, delimiter=',')
-      logWriter.writerow([datetime.now().date(), datetime.now().time(),"BROADCAST TX ERROR", e])
+    print(res)
+    print("ERROR")
+    #with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
+    #  logWriter = csv.writer(csv_file, delimiter=',')
+    #  logWriter.writerow([datetime.now().date(), datetime.now().time(),"BROADCAST TX ERROR", e])
     return False
 
 def createMsgExecuteSswap(botInfo: BotInfo, expectedReturn, amountToSwap, contractAddr, contractHash, nonce, txEncryptionKey):
@@ -172,13 +175,15 @@ def createMsgExecuteSswap(botInfo: BotInfo, expectedReturn, amountToSwap, contra
   encryptedMsgSswap = str( base64.b64encode(msgSswap.encode("utf-8")), "utf-8")
   handleMsgSswap = { "send": {"recipient": botInfo.pairContractAddresses["pair1"], "amount": amountToSwap, "msg": encryptedMsgSswap }}
   msgExecuteSswap = botInfo.client.wasm.contract_execute_msg(botInfo.accAddr, contractAddr, handleMsgSswap, [], contractHash, nonce, txEncryptionKey)
+  print(handleMsgSswap)
   return msgExecuteSswap
 
 def createMsgExecuteSienna(botInfo: BotInfo, expectedReturn, amountToSwap, contractAddr, contractHash, nonce, txEncryptionKey):
-  msgSienna = json.dumps({"swap":{"to":None,"expected_return":expectedReturn}})
+  msgSienna = json.dumps({"swap":{"to":botInfo.accAddr,"expected_return":expectedReturn}})
   encryptedMsgSienna = str( base64.b64encode(msgSienna.encode("utf-8")), "utf-8")
   handleMsgSienna = { "send": {"recipient": botInfo.pairContractAddresses["pair2"], "amount": amountToSwap, "msg": encryptedMsgSienna }}
   msgExecuteSienna = botInfo.client.wasm.contract_execute_msg(botInfo.accAddr, contractAddr, handleMsgSienna, [], contractHash, nonce, txEncryptionKey)
+  print(handleMsgSienna)
   return msgExecuteSienna
 
 async def swapSienna(
@@ -203,13 +208,13 @@ async def swapSienna(
     sscrtBalStr,  
     botInfo.tokenContractAddresses["token1"],
     botInfo.tokenContractHashes["token1"],
-    nonceDict['first'], 
-    txEncryptionKeyDict['first'],
+    nonceDict["first"], 
+    txEncryptionKeyDict["first"],
   )
 
   msgExecuteSswap = createMsgExecuteSswap(
     botInfo,
-    minExpectedStr,
+    "0",
     firstSwapStr,
     botInfo.tokenContractAddresses["token2"],
     botInfo.tokenContractHashes["token2"], 
@@ -247,7 +252,7 @@ async def swapSswap(
 
   msgExecuteSienna = createMsgExecuteSienna(
     botInfo,
-    minExpectedStr,
+    "0",
     firstSwapStr,
     botInfo.tokenContractAddresses["token2"],
     botInfo.tokenContractHashes["token2"],
