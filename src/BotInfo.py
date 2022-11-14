@@ -1,5 +1,5 @@
 import csv
-#import fcntl
+import fcntl
 import time
 from typing import Any, Dict, List
 from secret_sdk.client.lcd.lcdclient import AsyncLCDClient, LCDClient
