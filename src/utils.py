@@ -158,7 +158,7 @@ async def broadcastTx(botInfo: BotInfo, msgExecuteFirst, msgExecuteSecond):
 
   tx = botInfo.wallet.key.sign_tx(stdSignMsg)
   try:
-    res = await botInfo.asyncClient.tx.broadcast(tx)
+    res = await botInfo.asyncClient.tx.broadcast_sync(tx)
     #print(res)
     return res
   except Exception as e:
