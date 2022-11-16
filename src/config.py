@@ -57,7 +57,7 @@ config = {
     "outputLogLoc": "./../logs/sscrt-shd.log",
     "fee": {
       "gas": 4000000,
-      "price": "100000uscrt",
+      "price": "200000uscrt",
     },
   },
   "sscrt-seth-config": {
@@ -95,7 +95,7 @@ config = {
     "outputLogLoc": "./../logs/sscrt-seth.log",
     "fee": {
       "gas": 4000000,
-      "price": "100000uscrt",
+      "price": "200000uscrt",
     },
   },
   "sscrt-swbtc-config": {
@@ -133,7 +133,7 @@ config = {
     "outputLogLoc": "./../logs/sscrt-swbtc.log",
     "fee": {
       "gas": 4000000,
-      "price": "100000uscrt",
+      "price": "200000uscrt",
     },
   },
   "sscrt-susdt-config": {
@@ -171,7 +171,7 @@ config = {
     "outputLogLoc": "./../logs/sscrt-susdt.log",
     "fee": {
       "gas": 4000000,
-      "price": "100000uscrt",
+      "price": "200000uscrt",
     },
   },
   "sscrt-sxmr-config": {
@@ -209,7 +209,7 @@ config = {
     "outputLogLoc": "./../logs/sscrt-seth.log",
     "fee": {
       "gas": 4000000,
-      "price": "100000uscrt",
+      "price": "200000uscrt",
     },
   },
   "sscrt-sienna-config": {
@@ -247,7 +247,7 @@ config = {
     "outputLogLoc": "./../logs/sscrt-sienna.log",
     "fee": {
       "gas": 4000000,
-      "price": "100000uscrt",
+      "price": "200000uscrt",
     },
   },
 }

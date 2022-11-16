@@ -26,7 +26,7 @@ async def main():
   maxAmountSwapping = botInfo.total[0] - 5
   optimumAmountSwapping = height = lastHeight = lastProfit = 0
   lastLoopIsError = False
-  gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/10000000)*1.5
+  gasFeeScrt = (int(botInfo.fee.to_data()["gas"])/20000000)*1.5
   with open( botInfo.logs["output"], mode="a", newline="") as csv_file:
     logWriter = csv.writer(csv_file, delimiter=',')
     logWriter.writerow([datetime.now().date(), datetime.now().time(),"Starting loop"])
