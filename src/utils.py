@@ -106,8 +106,8 @@ def optimumProfit(poolBuy1, poolSell1, poolBuy2, poolSell2):
   return optimized
 
 def calculateProfitCP(s1t2, s1t1, s2t2, s2t1, amountSwapped, gasFeeScrt):
-  firstSwap = constantProduct(s1t2, s1t1, amountSwapped*.996)
-  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.997) * .999
+  firstSwap = constantProduct(s1t2, s1t1, amountSwapped*.994)
+  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.997) * .997
 
   profit = secondSwap - amountSwapped - gasFeeScrt
   return profit, firstSwap, secondSwap 
@@ -138,8 +138,8 @@ def calculateProfitOptimized(s1t2,s1t1,s2t2,s2t1, max, gasFeeScrt):
     amountToSwap = max
   if (amountToSwap < 1):
     amountToSwap = 1
-  firstSwap = constantProduct(s1t2, s1t1, amountToSwap*.997) * .9999
-  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.997) * .9999
+  firstSwap = constantProduct(s1t2, s1t1, amountToSwap*.997) * .998
+  secondSwap = constantProduct(s2t1, s2t2, firstSwap*.997) * .998
   profit = secondSwap - amountToSwap - gasFeeScrt
   return amountToSwap, profit, firstSwap, secondSwap
 
